@@ -1,0 +1,12 @@
+<ExtensionModel>
+	<Runtime>
+		<Import assembly="MonoDevelop.PowerShell.dll" />
+	</Runtime>
+	
+	<!--<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
+		<Class
+			id="PowerShellTextEditorExtension"
+			fileExtensions=".ps1"
+			class="MonoDevelop.PowerShell.PowerShellTextEditorExtension" />
+	</Extension>-->
+</ExtensionModel>

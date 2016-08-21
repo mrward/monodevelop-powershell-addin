@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MDBinDir Condition=" '$(MDBinDir)' == '' ">..\..\..\..\monodevelop\main\build\bin</MDBinDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Addins">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Mono.Addins.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Core">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\MonoDevelop.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Ide">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\MonoDevelop.Ide.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
