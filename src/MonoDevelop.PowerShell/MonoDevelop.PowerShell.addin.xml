@@ -2,7 +2,39 @@
 	<Runtime>
 		<Import assembly="MonoDevelop.PowerShell.dll" />
 	</Runtime>
-	
+
+	<Extension path="/MonoDevelop/Core/MimeTypes">
+		<MimeType
+			id="application/powershell"
+			_description="PowerShell"
+			isText="true">
+			<File pattern="*.ps1" />
+		</MimeType>
+		<MimeType
+			id="application/powershell-manifest"
+			_description="PowerShell Manifest"
+			isText="true">
+			<File pattern="*.psd1" />
+		</MimeType>
+		<MimeType
+			id="application/powershell-module"
+			_description="PowerShell Module"
+			isText="true">
+			<File pattern="*.psm1" />
+		</MimeType>
+	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/FileFilters">
+		<FileFilter
+			id="PowerShellFiles"
+			_label="PowerShell Files"
+			extensions="*.ps1;*.psm1*.psd1" />
+	</Extension>
+
+	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
+		<Templates resource="PowerShellSyntaxMode.xml" />
+	</Extension>
+
 	<!--<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
 		<Class
 			id="PowerShellTextEditorExtension"
