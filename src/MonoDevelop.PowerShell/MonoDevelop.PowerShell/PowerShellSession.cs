@@ -28,16 +28,16 @@ using System;
 using System.Threading.Tasks;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
-using Microsoft.PowerShell.EditorServices.Protocol.Client;
-using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
+using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
+using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol;
 
 namespace MonoDevelop.PowerShell
 {
 	class PowerShellSession
 	{
 		PowerShellProcess process;
-		LanguageServiceClient languageServiceClient;
+		PowerShellLanguageServiceClient languageServiceClient;
 		Document documentOpened;
 
 		public PowerShellSession (FilePath fileName)
@@ -82,7 +82,7 @@ namespace MonoDevelop.PowerShell
 		Task StartLanguageServiceClient (SessionDetailsMessage sessionDetails)
 		{
 			var channel = new TcpSocketClientChannel (sessionDetails.LanguageServicePort);
-			languageServiceClient = new LanguageServiceClient (channel);
+			languageServiceClient = new PowerShellLanguageServiceClient (channel, this);
 			return languageServiceClient.Start ();
 		}
 
@@ -100,24 +100,24 @@ namespace MonoDevelop.PowerShell
 
 		void SendOpenDocumentMessage (Document document)
 		{
-			var message = new DidOpenTextDocumentNotification () {
-				Uri = FileName,
-				Text = document.Editor.Text
-			};
-			languageServiceClient.SendEvent (DidOpenTextDocumentNotification.Type, message);
+			languageServiceClient.OpenDocument (document);
 		}
 
-		async Task OpenDocumentIfNotOpened ()
+		Task OpenDocumentIfNotOpened ()
 		{
-			Document document = await Runtime.RunInMainThread (() => {
-				var existingDocument = documentOpened;
+			return Runtime.RunInMainThread (() => {
+				Document existingDocument = documentOpened;
 				documentOpened = null;
-				return existingDocument;
+				SendOpenDocumentMessage (existingDocument);
 			});
+		}
 
-			if (document != null) {
-				SendOpenDocumentMessage (document);
-			}
+		public event EventHandler<DiagnosticsEventArgs> OnDiagnostics;
+
+		internal Task OnPublishDiagnosticsEvent (PublishDiagnosticsNotification notification, EventContext context)
+		{
+			OnDiagnostics?.Invoke (this, new DiagnosticsEventArgs (notification));
+			return Task.FromResult (true);
 		}
 	}
 }

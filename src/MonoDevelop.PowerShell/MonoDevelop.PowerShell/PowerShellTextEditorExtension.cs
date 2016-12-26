@@ -24,25 +24,69 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
+using MonoDevelop.Core;
+using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
+using MonoDevelop.Ide.TypeSystem;
 
 namespace MonoDevelop.PowerShell
 {
 	class PowerShellTextEditorExtension : CompletionTextEditorExtension
 	{
 		PowerShellSession session;
+		List<IErrorMarker> errorMarkers = new List<IErrorMarker> ();
 
 		protected override void Initialize ()
 		{
 			PowerShellServices.Activate ();
 
 			session = PowerShellServices.Workspace.GetSession (Editor.FileName);
+			session.OnDiagnostics += OnDiagnostics;
 
 			base.Initialize ();
 		}
 
+		public override void Dispose ()
+		{
+			if (session != null) {
+				session.OnDiagnostics -= OnDiagnostics;
+				session = null;
+			}
+			base.Dispose ();
+		}
+
 		public override string CompletionLanguage {
 			get { return "powershell"; }
+		}
+
+		void OnDiagnostics (object sender, DiagnosticsEventArgs e)
+		{
+			if (e.FileName == null || !(Editor.FileName == e.FileName))
+				return;
+
+			Runtime.RunInMainThread (() => {
+				ShowDiagnostics (e.Diagnostics);
+			});
+		}
+
+		void ClearDiagnostics ()
+		{
+			errorMarkers.ForEach (error => Editor.RemoveMarker (error));
+			errorMarkers.Clear ();
+		}
+
+		void ShowDiagnostics (Diagnostic[] diagnostics)
+		{
+			ClearDiagnostics ();
+
+			foreach (Error error in diagnostics.Select (diagnostic => diagnostic.CreateError ())) {
+				IErrorMarker marker = TextMarkerFactory.CreateErrorMarker (Editor, error);
+				Editor.AddMarker (marker);
+				errorMarkers.Add (marker);
+			}
 		}
 	}
 }

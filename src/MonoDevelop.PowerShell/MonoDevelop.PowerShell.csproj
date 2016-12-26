@@ -48,6 +48,9 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellOutputPad.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellLoggingService.cs" />
     <Compile Include="MonoDevelop.PowerShell\StatusBarErrorReporter.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLanguageServiceClient.cs" />
+    <Compile Include="MonoDevelop.PowerShell\DiagnosticsEventArgs.cs" />
+    <Compile Include="MonoDevelop.PowerShell\DiagnosticExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
