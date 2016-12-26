@@ -1,6 +1,16 @@
 <ExtensionModel>
 	<Runtime>
 		<Import assembly="MonoDevelop.PowerShell.dll" />
+
+		<Import file="scripts/Start-EditorServices.ps1" />
+
+		<Import file="modules/PowerShellEditorServices/PowerShellEditorServices.psd1" />
+		<Import file="modules/PowerShellEditorServices/PowerShellEditorServices.psm1" />
+		<Import file="modules/PowerShellEditorServices/bin/Desktop/Microsoft.PowerShell.EditorServices.Host.dll" />
+		<Import file="modules/PowerShellEditorServices/bin/Desktop/Microsoft.PowerShell.EditorServices.Protocol.dll" />
+		<Import file="modules/PowerShellEditorServices/bin/Desktop/Microsoft.PowerShell.EditorServices.dll" />
+		<Import file="modules/PowerShellEditorServices/bin/Desktop/Newtonsoft.Json.dll" />
+		<Import file="modules/PowerShellEditorServices/bin/Nano/Microsoft.PowerShell.EditorServices.Nano.dll" />
 	</Runtime>
 
 	<Extension path="/MonoDevelop/Core/MimeTypes">
