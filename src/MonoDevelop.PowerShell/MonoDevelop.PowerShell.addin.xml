@@ -45,10 +45,10 @@
 		<Templates resource="PowerShellSyntaxMode.xml" />
 	</Extension>
 
-	<!--<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
+	<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
 		<Class
 			id="PowerShellTextEditorExtension"
-			fileExtensions=".ps1"
+			fileExtensions=".ps1, .psd1, .psm1"
 			class="MonoDevelop.PowerShell.PowerShellTextEditorExtension" />
-	</Extension>-->
+	</Extension>
 </ExtensionModel>
