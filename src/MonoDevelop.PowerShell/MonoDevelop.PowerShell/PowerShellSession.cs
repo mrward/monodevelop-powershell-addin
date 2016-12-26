@@ -25,13 +25,20 @@
 // THE SOFTWARE.
 
 using System;
+using System.Threading.Tasks;
 using MonoDevelop.Core;
+using MonoDevelop.Ide.Gui;
+using Microsoft.PowerShell.EditorServices.Protocol.Client;
+using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
+using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 
 namespace MonoDevelop.PowerShell
 {
 	class PowerShellSession
 	{
 		PowerShellProcess process;
+		LanguageServiceClient languageServiceClient;
+		Document documentOpened;
 
 		public PowerShellSession (FilePath fileName)
 		{
@@ -49,6 +56,11 @@ namespace MonoDevelop.PowerShell
 
 		public void Stop ()
 		{
+			if (languageServiceClient != null) {
+				languageServiceClient.Stop ();
+				languageServiceClient = null;
+			}
+
 			if (process != null) {
 				process.Stop ();
 				process.Started -= PowerShellProcessStarted;
@@ -58,6 +70,54 @@ namespace MonoDevelop.PowerShell
 
 		void PowerShellProcessStarted (object sender, EventArgs e)
 		{
+			try {
+				StartLanguageServiceClient (process.SessionDetails).Wait ();
+				OpenDocumentIfNotOpened ().Wait ();
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("Failed to start language service client.", ex);
+				PowerShellServices.ErrorReporter.ReportError ("Could not start PowerShell language service.");
+			}
+		}
+
+		Task StartLanguageServiceClient (SessionDetailsMessage sessionDetails)
+		{
+			var channel = new TcpSocketClientChannel (sessionDetails.LanguageServicePort);
+			languageServiceClient = new LanguageServiceClient (channel);
+			return languageServiceClient.Start ();
+		}
+
+		public void OpenDocument (Document document)
+		{
+			Runtime.AssertMainThread ();
+
+			if (languageServiceClient == null) {
+				documentOpened = document;
+			} else {
+				documentOpened = null;
+				SendOpenDocumentMessage (document);
+			}
+		}
+
+		void SendOpenDocumentMessage (Document document)
+		{
+			var message = new DidOpenTextDocumentNotification () {
+				Uri = FileName,
+				Text = document.Editor.Text
+			};
+			languageServiceClient.SendEvent (DidOpenTextDocumentNotification.Type, message);
+		}
+
+		async Task OpenDocumentIfNotOpened ()
+		{
+			Document document = await Runtime.RunInMainThread (() => {
+				var existingDocument = documentOpened;
+				documentOpened = null;
+				return existingDocument;
+			});
+
+			if (document != null) {
+				SendOpenDocumentMessage (document);
+			}
 		}
 	}
 }

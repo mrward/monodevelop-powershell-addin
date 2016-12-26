@@ -1,6 +1,7 @@
 <ExtensionModel>
 	<Runtime>
 		<Import assembly="MonoDevelop.PowerShell.dll" />
+		<Import assembly="Microsoft.PowerShell.EditorServices.Client.dll" />
 
 		<Import file="scripts/Start-EditorServices.ps1" />
 

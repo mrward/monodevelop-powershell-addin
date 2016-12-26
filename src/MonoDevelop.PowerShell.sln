@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoDevelop.PowerShell", "MonoDevelop.PowerShell\MonoDevelop.PowerShell.csproj", "{BCFBB400-4713-463F-82DF-3B54C0F2D3EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellEditorServices.Client", "..\external\PowerShellEditorServices\src\PowerShellEditorServices.Client.csproj", "{09365A94-E8C0-4735-88F8-15CFF6CDBAEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{BCFBB400-4713-463F-82DF-3B54C0F2D3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCFBB400-4713-463F-82DF-3B54C0F2D3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCFBB400-4713-463F-82DF-3B54C0F2D3EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09365A94-E8C0-4735-88F8-15CFF6CDBAEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09365A94-E8C0-4735-88F8-15CFF6CDBAEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09365A94-E8C0-4735-88F8-15CFF6CDBAEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09365A94-E8C0-4735-88F8-15CFF6CDBAEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

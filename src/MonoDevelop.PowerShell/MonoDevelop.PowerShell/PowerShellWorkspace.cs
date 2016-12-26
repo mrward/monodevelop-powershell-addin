@@ -78,8 +78,12 @@ namespace MonoDevelop.PowerShell
 
 		void WorkbenchDocumentOpened (Document document)
 		{
-			//PowerShellSession session = GetSession (document);
-			//session.OpenDocument (document);
+			try {
+				PowerShellSession session = GetSession (document);
+				session.OpenDocument (document);
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("Error opening PowerShell document.", ex);
+			}
 		}
 
 		void WorkbenchDocumentClosed (Document document)
