@@ -50,4 +50,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="MonoDevelop.References.proj" />
+  <Import Project="PostBuild.proj" />
 </Project>

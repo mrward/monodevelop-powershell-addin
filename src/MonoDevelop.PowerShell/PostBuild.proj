@@ -1,0 +1,17 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<PrepareForRunDependsOn>$(PrepareForRunDependsOn);MyPostBuildTarget</PrepareForRunDependsOn>
+	</PropertyGroup>
+	<ItemGroup>
+		<ScriptItem Include="$(MSBuildProjectDirectory)\..\..\scripts\*.ps1" />
+		<ModuleDefinitionItem Include="$(MSBuildProjectDirectory)\..\..\modules\PowerShellEditorServices\*.*" />
+		<ModuleDesktopBinaryItem Include="$(MSBuildProjectDirectory)\..\..\modules\PowerShellEditorServices\bin\Desktop\*.*" />
+		<ModuleNanoBinaryItem Include="$(MSBuildProjectDirectory)\..\..\modules\PowerShellEditorServices\bin\Nano\*.*" />
+	</ItemGroup>
+	<Target Name="MyPostBuildTarget">
+		<Copy SourceFiles="@(ScriptItem)" DestinationFolder="$(OutputPath)\scripts" />
+		<Copy SourceFiles="@(ModuleDefinitionItem)" DestinationFolder="$(OutputPath)\modules\PowerShellEditorServices" />
+		<Copy SourceFiles="@(ModuleDesktopBinaryItem)" DestinationFolder="$(OutputPath)\modules\PowerShellEditorServices\bin\Desktop" />
+		<Copy SourceFiles="@(ModuleNanoBinaryItem)" DestinationFolder="$(OutputPath)\modules\PowerShellEditorServices\bin\Nano" />
+	</Target>
+</Project>
