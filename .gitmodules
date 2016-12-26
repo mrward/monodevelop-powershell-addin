@@ -1,0 +1,3 @@
+[submodule "external/PowerShellEditorServices"]
+	path = external/PowerShellEditorServices
+	url = git@github.com:mrward/PowerShellEditorServices.git
