@@ -30,6 +30,7 @@ using System.Linq;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.PowerShell
 {
@@ -41,12 +42,14 @@ namespace MonoDevelop.PowerShell
 		{
 			IdeApp.Workbench.DocumentOpened += WorkbenchDocumentOpened;
 			IdeApp.Workbench.DocumentClosed += WorkbenchDocumentClosed;
+			IdeApp.Workspace.SolutionUnloaded += SolutionUnloaded;
 		}
 
 		public void Dispose ()
 		{
 			IdeApp.Workbench.DocumentOpened -= WorkbenchDocumentOpened;
 			IdeApp.Workbench.DocumentClosed -= WorkbenchDocumentClosed;
+			IdeApp.Workspace.SolutionUnloaded -= SolutionUnloaded;
 		}
 
 		static bool IsSupported (Document document)
@@ -84,8 +87,12 @@ namespace MonoDevelop.PowerShell
 			try {
 				PowerShellSession session = GetSession (document);
 				session.Stop ();
+				sessions.Remove (session);
+				if (sessions.Count == 0) {
+					PowerShellOutputPad.LogView.Clear ();
+				}
 			} catch (Exception ex) {
-				LoggingService.LogError ("Error stopping PowerShell session.", ex);
+				PowerShellLoggingService.LogError ("Error stopping PowerShell session.", ex);
 			}
 		}
 
@@ -110,8 +117,20 @@ namespace MonoDevelop.PowerShell
 		PowerShellSession CreateSession (FilePath fileName)
 		{
 			var session = new PowerShellSession (fileName);
-			session.Start ();
+
+			if (PowerShellPathLocator.Exists) {
+				session.Start ();
+			} else {
+				PowerShellLoggingService.LogError ("PowerShell is not installed. Please download and install PowerShell from https://github.com/PowerShell/PowerShell");
+				PowerShellServices.ErrorReporter.ReportError (GettextCatalog.GetString ("PowerShell is not installed."));
+			}
 			return session;
+		}
+
+		void SolutionUnloaded (object sender, SolutionEventArgs e)
+		{
+			PowerShellOutputPad.LogView.Clear ();
+			sessions.Clear ();
 		}
 	}
 }

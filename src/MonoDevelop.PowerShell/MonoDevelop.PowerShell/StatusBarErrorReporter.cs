@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellServices.cs
+// StatusBarErrorReporter.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -24,39 +24,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellServices
+	class StatusBarErrorReporter
 	{
-		static bool active;
-		static PowerShellWorkspace workspace;
-		static readonly StatusBarErrorReporter errorReporter = new StatusBarErrorReporter ();
-
-		public static void Activate ()
+		public void ReportError (string message)
 		{
-			if (active)
-				return;
-
-			try {
-				workspace = new PowerShellWorkspace ();
-				workspace.Initialize ();
-
-				active = true;
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("PowerShellServices activation error.", ex);
-				errorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
-			}
+			Runtime.RunInMainThread (() => {
+				ReportErrorInternal (message);
+			});
 		}
 
-		public static PowerShellWorkspace Workspace {
-			get { return workspace; }
-		}
-
-		public static StatusBarErrorReporter ErrorReporter {
-			get { return errorReporter; }
+		void ReportErrorInternal (string message)
+		{
+			Pad pad = IdeApp.Workbench.GetPad<PowerShellOutputPad> ();
+			IdeApp.Workbench.StatusBar.ShowError (message);
+			IdeApp.Workbench.StatusBar.SetMessageSourcePad (pad);
 		}
 	}
 }

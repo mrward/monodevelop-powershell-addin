@@ -81,13 +81,15 @@ namespace MonoDevelop.PowerShell
 					OnStarted ();
 				}
 			} catch (Exception ex) {
-				LoggingService.LogError ("Unable to parse PowerShell output.", ex);
+				PowerShellLoggingService.LogError ("Unable to parse PowerShell output.", ex);
+				PowerShellServices.ErrorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell language service."));
 			}
 		}
 
 		void ProcessErrorStreamChanged (object sender, string message)
 		{
-			Console.WriteLine ("Error: " + message);
+			PowerShellLoggingService.LogError (message);
+			PowerShellServices.ErrorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
 		}
 
 		public void Stop ()

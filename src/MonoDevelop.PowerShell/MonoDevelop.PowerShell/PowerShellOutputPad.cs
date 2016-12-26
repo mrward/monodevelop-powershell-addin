@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellServices.cs
+// PowerShellOutputPad.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -25,38 +25,62 @@
 // THE SOFTWARE.
 
 using System;
+using Gtk;
+using MonoDevelop.Components;
+using MonoDevelop.Components.Docking;
 using MonoDevelop.Core;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.Ide.Gui.Components;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellServices
+	class PowerShellOutputPad : PadContent
 	{
-		static bool active;
-		static PowerShellWorkspace workspace;
-		static readonly StatusBarErrorReporter errorReporter = new StatusBarErrorReporter ();
+		static PowerShellOutputPad instance;
+		static readonly LogView logView = new LogView ();
 
-		public static void Activate ()
+		public PowerShellOutputPad ()
 		{
-			if (active)
-				return;
-
-			try {
-				workspace = new PowerShellWorkspace ();
-				workspace.Initialize ();
-
-				active = true;
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("PowerShellServices activation error.", ex);
-				errorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
-			}
+			instance = this;
 		}
 
-		public static PowerShellWorkspace Workspace {
-			get { return workspace; }
+		public static PowerShellOutputPad Instance {
+			get { return instance; }
 		}
 
-		public static StatusBarErrorReporter ErrorReporter {
-			get { return errorReporter; }
+		protected override void Initialize (IPadWindow window)
+		{
+			DockItemToolbar toolbar = window.GetToolbar (DockPositionType.Right);
+
+			var clearButton = new Button (new ImageView (Ide.Gui.Stock.Broom, IconSize.Menu));
+			clearButton.Clicked += ButtonClearClick;
+			clearButton.TooltipText = GettextCatalog.GetString ("Clear");
+			toolbar.Add (clearButton);
+			toolbar.ShowAll ();
+			logView.ShowAll ();
+		}
+
+		public override Control Control {
+			get { return logView; }
+		}
+
+		public static LogView LogView {
+			get { return logView; }
+		}
+
+		void ButtonClearClick (object sender, EventArgs e)
+		{
+			logView.Clear ();
+		}
+
+		public static void WriteText (string message)
+		{
+			logView.WriteText (message + Environment.NewLine);
+		}
+
+		public static void WriteError (string message)
+		{
+			logView.WriteError (message + Environment.NewLine);
 		}
 	}
 }

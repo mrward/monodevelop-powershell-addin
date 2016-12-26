@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellServices.cs
+// PowerShellLoggingService.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -25,38 +25,23 @@
 // THE SOFTWARE.
 
 using System;
-using MonoDevelop.Core;
-
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellServices
+	class PowerShellLoggingService
 	{
-		static bool active;
-		static PowerShellWorkspace workspace;
-		static readonly StatusBarErrorReporter errorReporter = new StatusBarErrorReporter ();
-
-		public static void Activate ()
+		public static void Log (string message)
 		{
-			if (active)
-				return;
-
-			try {
-				workspace = new PowerShellWorkspace ();
-				workspace.Initialize ();
-
-				active = true;
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("PowerShellServices activation error.", ex);
-				errorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
-			}
+			PowerShellOutputPad.WriteText (message);
 		}
 
-		public static PowerShellWorkspace Workspace {
-			get { return workspace; }
+		public static void LogError (string message)
+		{
+			PowerShellOutputPad.WriteError (message);
 		}
 
-		public static StatusBarErrorReporter ErrorReporter {
-			get { return errorReporter; }
+		public static void LogError (string message, Exception ex)
+		{
+			LogError (message + Environment.NewLine + ex);
 		}
 	}
 }

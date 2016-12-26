@@ -51,4 +51,15 @@
 			fileExtensions=".ps1, .psd1, .psm1"
 			class="MonoDevelop.PowerShell.PowerShellTextEditorExtension" />
 	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/Pads">
+		<Pad
+			id="MonoDevelop.PowerShell.PowerShellOutputPad"
+			defaultLayout="*"
+			defaultPlacement="Center Bottom"
+			defaultStatus="AutoHide"
+			icon="md-console"
+			class="MonoDevelop.PowerShell.PowerShellOutputPad"
+			_label="PowerShell Editor Services" />
+	</Extension>
 </ExtensionModel>

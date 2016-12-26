@@ -28,6 +28,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -41,6 +45,9 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellProcess.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellStandardOutputParser.cs" />
     <Compile Include="MonoDevelop.PowerShell\SessionDetailsMessage.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellOutputPad.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLoggingService.cs" />
+    <Compile Include="MonoDevelop.PowerShell\StatusBarErrorReporter.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
