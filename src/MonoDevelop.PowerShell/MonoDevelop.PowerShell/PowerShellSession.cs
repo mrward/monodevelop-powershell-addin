@@ -31,6 +31,8 @@ using MonoDevelop.Ide.Gui;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol;
+using MonoDevelop.Core.Text;
+using MonoDevelop.Ide.Editor;
 
 namespace MonoDevelop.PowerShell
 {
@@ -118,6 +120,17 @@ namespace MonoDevelop.PowerShell
 		{
 			OnDiagnostics?.Invoke (this, new DiagnosticsEventArgs (notification));
 			return Task.FromResult (true);
+		}
+
+		public void TextChanged (TextChangeEventArgs e, TextEditor editor)
+		{
+			Runtime.AssertMainThread ();
+
+			var message = new DidChangeTextDocumentParams {
+				Uri = FileName,
+				ContentChanges = new [] { e.CreateTextDocumentChangeEvent (editor) }
+			};
+			languageServiceClient.SendEvent (DidChangeTextDocumentNotification.Type, message);
 		}
 	}
 }

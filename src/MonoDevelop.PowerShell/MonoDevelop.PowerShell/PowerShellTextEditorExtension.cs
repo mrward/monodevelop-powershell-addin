@@ -24,10 +24,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core;
+using MonoDevelop.Core.Text;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
 using MonoDevelop.Ide.TypeSystem;
@@ -46,6 +48,8 @@ namespace MonoDevelop.PowerShell
 			session = PowerShellServices.Workspace.GetSession (Editor.FileName);
 			session.OnDiagnostics += OnDiagnostics;
 
+			Editor.TextChanging += TextChanging;
+
 			base.Initialize ();
 		}
 
@@ -54,6 +58,9 @@ namespace MonoDevelop.PowerShell
 			if (session != null) {
 				session.OnDiagnostics -= OnDiagnostics;
 				session = null;
+			}
+			if (Editor != null) {
+				Editor.TextChanged -= TextChanging;
 			}
 			base.Dispose ();
 		}
@@ -86,6 +93,15 @@ namespace MonoDevelop.PowerShell
 				IErrorMarker marker = TextMarkerFactory.CreateErrorMarker (Editor, error);
 				Editor.AddMarker (marker);
 				errorMarkers.Add (marker);
+			}
+		}
+
+		void TextChanging (object sender, TextChangeEventArgs e)
+		{
+			try {
+				session.TextChanged (e, Editor);
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("TextChanged error.", ex);
 			}
 		}
 	}
