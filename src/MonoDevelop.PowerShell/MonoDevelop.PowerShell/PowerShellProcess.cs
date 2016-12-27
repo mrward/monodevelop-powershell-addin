@@ -35,11 +35,13 @@ namespace MonoDevelop.PowerShell
 	{
 		ProcessWrapper process;
 		PowerShellStandardOutputParser outputParser;
+		bool processStartedSuccessfully;
 
 		public event EventHandler Started;
 
 		void OnStarted ()
 		{
+			processStartedSuccessfully = true;
 			Started?.Invoke (this, new EventArgs ());
 		}
 
@@ -89,7 +91,9 @@ namespace MonoDevelop.PowerShell
 		void ProcessErrorStreamChanged (object sender, string message)
 		{
 			PowerShellLoggingService.LogError (message);
-			PowerShellServices.ErrorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
+			if (!processStartedSuccessfully) {
+				PowerShellServices.ErrorReporter.ReportError (GettextCatalog.GetString ("Could not run PowerShell editor services."));
+			}
 		}
 
 		public void Stop ()
