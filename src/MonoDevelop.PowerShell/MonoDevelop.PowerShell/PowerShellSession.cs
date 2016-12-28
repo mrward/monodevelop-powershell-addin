@@ -142,14 +142,28 @@ namespace MonoDevelop.PowerShell
 			if (languageServiceClient == null)
 				return Task.FromResult (new CompletionItem[0]);
 
-			var position = new TextDocumentPosition {
+			var position = CreateTextDocumentPosition (completionContext);
+			return languageServiceClient.SendRequest (CompletionRequest.Type, position);
+		}
+
+		TextDocumentPosition CreateTextDocumentPosition (CodeCompletionContext completionContext)
+		{
+			return new TextDocumentPosition {
 				Position = new Position {
 					Character = completionContext.TriggerLineOffset,
 					Line = completionContext.TriggerLine - 1
 				},
 				Uri = FileName
 			};
-			return languageServiceClient.SendRequest (CompletionRequest.Type, position);
+		}
+
+		public Task<SignatureHelp> GetSignatureHelp (CodeCompletionContext completionContext)
+		{
+			if (languageServiceClient == null)
+				return Task.FromResult (new SignatureHelp ());
+
+			var position = CreateTextDocumentPosition (completionContext);
+			return languageServiceClient.SendRequest (SignatureHelpRequest.Type, position);
 		}
 
 		public Task<Location[]> GetReferences (Position position)

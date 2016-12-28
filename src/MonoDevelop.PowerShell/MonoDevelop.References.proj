@@ -20,5 +20,9 @@
       <Private>False</Private>
       <HintPath>$(MDBinDir)\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

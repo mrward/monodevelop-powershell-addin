@@ -118,6 +118,9 @@ namespace MonoDevelop.PowerShell
 			if (Editor.EditMode == EditMode.TextLink)
 				return null;
 
+			if (completionChar == ' ')
+				return null;
+
 			try {
 				TextSegment wordSegment = Editor.GetWordRangeAtPosition (completionContext.TriggerLineOffset, Editor.GetLine (completionContext.TriggerLine));
 
@@ -169,6 +172,38 @@ namespace MonoDevelop.PowerShell
 		{
 			var renamer = new PowerShellReferencesFinder (Editor, session);
 			renamer.RenameOccurrences (Editor.CaretLocation);
+		}
+
+		public override Task<ParameterHintingResult> HandleParameterCompletionAsync (
+			CodeCompletionContext completionContext,
+			char completionChar,
+			CancellationToken token = default (CancellationToken))
+		{
+			if (completionChar == ' ') {
+				try {
+					return GetParameterCompletionAsync (completionContext, token);
+				} catch (Exception ex) {
+					PowerShellLoggingService.LogError ("HandleParameterCompletionAsync error.", ex);
+				}
+			}
+			return base.HandleParameterCompletionAsync (completionContext, completionChar, token);
+		}
+
+		async Task<ParameterHintingResult> GetParameterCompletionAsync (
+			CodeCompletionContext completionContext,
+			CancellationToken token)
+		{
+			SignatureHelp signatureHelp = await session.GetSignatureHelp (completionContext);
+			if (signatureHelp == null || !signatureHelp.Signatures.Any ()) {
+				return ParameterHintingResult.Empty;
+			}
+
+			var parameterDataItems = signatureHelp
+				.Signatures
+				.Select (signature => new PowerShellParameterHintingData (signature) as ParameterHintingData)
+				.ToList ();
+
+			return new ParameterHintingResult (parameterDataItems, completionContext.TriggerOffset);
 		}
 	}
 }
