@@ -26,13 +26,14 @@
 
 using System;
 using System.Threading.Tasks;
-using MonoDevelop.Core;
-using MonoDevelop.Ide.Gui;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol;
+using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
+using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Editor;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.PowerShell
 {
@@ -126,11 +127,29 @@ namespace MonoDevelop.PowerShell
 		{
 			Runtime.AssertMainThread ();
 
+			if (languageServiceClient == null)
+				return;
+
 			var message = new DidChangeTextDocumentParams {
 				Uri = FileName,
 				ContentChanges = new [] { e.CreateTextDocumentChangeEvent (editor) }
 			};
 			languageServiceClient.SendEvent (DidChangeTextDocumentNotification.Type, message);
+		}
+
+		public Task<CompletionItem[]> GetCompletionItems (CodeCompletionContext completionContext)
+		{
+			if (languageServiceClient == null)
+				return Task.FromResult (new CompletionItem[0]);
+
+			var position = new TextDocumentPosition {
+				Position = new Position {
+					Character = completionContext.TriggerLineOffset,
+					Line = completionContext.TriggerLine - 1
+				},
+				Uri = FileName
+			};
+			return languageServiceClient.SendRequest (CompletionRequest.Type, position);
 		}
 	}
 }

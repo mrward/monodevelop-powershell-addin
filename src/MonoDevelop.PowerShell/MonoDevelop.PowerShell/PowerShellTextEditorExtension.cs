@@ -27,9 +27,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
+using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
 using MonoDevelop.Ide.TypeSystem;
@@ -103,6 +106,33 @@ namespace MonoDevelop.PowerShell
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("TextChanged error.", ex);
 			}
+		}
+
+		public async override Task<ICompletionDataList> HandleCodeCompletionAsync (
+			CodeCompletionContext completionContext,
+			char completionChar,
+			CancellationToken token = default (CancellationToken))
+		{
+			try {
+				TextSegment wordSegment = Editor.GetWordRangeAtPosition (completionContext.TriggerLineOffset, Editor.GetLine (completionContext.TriggerLine));
+
+				CompletionItem[] items = await session.GetCompletionItems (completionContext);
+				if (items == null || !items.Any ())
+					return null;
+
+				var completionList = new CompletionDataList ();
+				completionList.TriggerWordLength = 1;
+				completionList.AddRange (items.Select (item => new PowerShellCompletionData (item)));
+
+				if (!wordSegment.IsEmpty) {
+					completionList.TriggerWordLength = wordSegment.Length;
+					completionContext.TriggerLineOffset = wordSegment.Offset;
+				}
+				return completionList;
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("HandleCodeCompletionAsync error.", ex);
+			}
+			return null;
 		}
 	}
 }

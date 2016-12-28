@@ -52,6 +52,8 @@
     <Compile Include="MonoDevelop.PowerShell\DiagnosticsEventArgs.cs" />
     <Compile Include="MonoDevelop.PowerShell\DiagnosticExtensions.cs" />
     <Compile Include="MonoDevelop.PowerShell\TextChangeEventArgsExtensions.cs" />
+    <Compile Include="MonoDevelop.PowerShell\TextEditorExtensions.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellCompletionData.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
