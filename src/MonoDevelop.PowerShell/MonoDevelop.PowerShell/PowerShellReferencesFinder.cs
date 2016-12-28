@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core;
+using MonoDevelop.Core.Text;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.FindInFiles;
@@ -67,6 +68,51 @@ namespace MonoDevelop.PowerShell
 			int endOffset = editor.PositionToOffset (location.Range.End);
 			var provider = new FileProvider (new FilePath (location.Uri), null, startOffset, endOffset);
 			return new SearchResult (provider, startOffset, endOffset - startOffset);
+		}
+
+		public async Task RenameOccurrences (DocumentLocation location)
+		{
+			try {
+				Location[] locations = await session.GetReferences (location.CreatePosition ());
+				List<SearchResult> references = locations.Select (CreateSearchResult).ToList ();
+				StartTextEditorRename (references);
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("FindReferences error.", ex);
+			}
+		}
+
+		void StartTextEditorRename (IEnumerable<SearchResult> references)
+		{
+			var oldVersion = editor.Version;
+
+			var links = CreateTextLinks (references);
+
+			editor.StartTextLinkMode (new TextLinkModeOptions (links, (arg) => {
+				if (!arg.Success) {
+					var textChanges = editor.Version.GetChangesTo (oldVersion).ToList ();
+					foreach (var v in textChanges) {
+						editor.ReplaceText (v.Offset, v.RemovalLength, v.InsertedText);
+					}
+				}
+			}));
+		}
+
+		List<TextLink> CreateTextLinks (IEnumerable<SearchResult> references)
+		{
+			var links = new List<TextLink> ();
+			var link = new TextLink ("name");
+
+			foreach (SearchResult reference in references) {
+				var segment = new TextSegment (reference.Offset, reference.Length);
+				if (segment.Offset <= editor.CaretOffset && editor.CaretOffset <= segment.EndOffset) {
+					link.Links.Insert (0, segment);
+				} else {
+					link.AddLink (segment);
+				}
+			}
+			links.Add (link);
+
+			return links;
 		}
 	}
 }

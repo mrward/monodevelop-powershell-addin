@@ -34,6 +34,7 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
 using MonoDevelop.Ide.CodeCompletion;
+using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
 using MonoDevelop.Ide.TypeSystem;
@@ -114,6 +115,9 @@ namespace MonoDevelop.PowerShell
 			char completionChar,
 			CancellationToken token = default (CancellationToken))
 		{
+			if (Editor.EditMode == EditMode.TextLink)
+				return null;
+
 			try {
 				TextSegment wordSegment = Editor.GetWordRangeAtPosition (completionContext.TriggerLineOffset, Editor.GetLine (completionContext.TriggerLine));
 
@@ -136,22 +140,36 @@ namespace MonoDevelop.PowerShell
 			return null;
 		}
 
+		bool IsWordAtCurrentCaretPosition ()
+		{
+			TextSegment wordSegment = Editor.GetWordRangeAtPosition (Editor.CaretColumn, Editor.GetLine (Editor.CaretLine));
+			return wordSegment.IsEmpty;
+		}
+
 		[CommandUpdateHandler (PowerShellCommands.FindReferences)]
 		void UpdateFindReferences (CommandInfo info)
 		{
-			TextSegment wordSegment = Editor.GetWordRangeAtPosition (Editor.CaretColumn, Editor.GetLine (Editor.CaretLine));
-			info.Enabled = !wordSegment.IsEmpty;
+			info.Enabled = !IsWordAtCurrentCaretPosition ();
 		}
 
 		[CommandHandler (PowerShellCommands.FindReferences)]
 		void FindReferences ()
 		{
-			try {
-				var finder = new PowerShellReferencesFinder (Editor, session);
-				finder.FindReferences (Editor.CaretLocation);
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("FindReferences error.", ex);
-			}
+			var finder = new PowerShellReferencesFinder (Editor, session);
+			finder.FindReferences (Editor.CaretLocation);
+		}
+
+		[CommandUpdateHandler (EditCommands.Rename)]
+		void UpdateRename (CommandInfo info)
+		{
+			info.Enabled = !IsWordAtCurrentCaretPosition ();
+		}
+
+		[CommandHandler (EditCommands.Rename)]
+		void Rename ()
+		{
+			var renamer = new PowerShellReferencesFinder (Editor, session);
+			renamer.RenameOccurrences (Editor.CaretLocation);
 		}
 	}
 }
