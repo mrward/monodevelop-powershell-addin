@@ -63,4 +63,23 @@
 			class="MonoDevelop.PowerShell.PowerShellOutputPad"
 			_label="PowerShell Editor Services" />
 	</Extension>
+
+		<Extension path="/MonoDevelop/Ide/Commands">
+		<Category _name="Code Navigation" id="CodeNavigation">
+			<Command
+				id="MonoDevelop.PowerShell.PowerShellCommands.FindReferences"
+				_label="_Find References"
+				shortcut="Shift|F12"
+				macShortcut="Shift|Meta|R Shift|F12"/>
+		</Category>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+		<Condition id="FileType" fileExtensions=".ps1,.psm1,.psd1">
+			<CommandItem
+				id="MonoDevelop.PowerShell.PowerShellCommands.FindReferences"
+				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
+				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
+		</Condition>
+	</Extension>
 </ExtensionModel>

@@ -1,5 +1,5 @@
 ﻿//
-// TextEditorExtensions.cs
+// PowerShellReferencesFinder.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -25,46 +25,48 @@
 // THE SOFTWARE.
 
 using System;
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core;
-using MonoDevelop.Core.Text;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Editor;
+using MonoDevelop.Ide.FindInFiles;
 
 namespace MonoDevelop.PowerShell
 {
-	static class TextEditorExtensions
+	class PowerShellReferencesFinder
 	{
-		public static TextSegment GetWordRangeAtPosition (this TextEditor editor, int column, IDocumentLine line)
+		TextEditor editor;
+		PowerShellSession session;
+
+		public PowerShellReferencesFinder (TextEditor editor, PowerShellSession session)
 		{
-			string text = editor.GetLineText (line);
-
-			string pattern = @"(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\=\+\[\{\]\}\\\|\;\'\""\,\.\<\>\/\?\s]+)";
-
-			MatchCollection matches = Regex.Matches (text, pattern, RegexOptions.Singleline);
-
-			foreach (Match match in matches) {
-				string word = match.Value;
-				int endWord = match.Index + match.Length;
-				int startWord = match.Index;
-
-				int startColumn = startWord + 1;
-				int endColumn = endWord + 1;
-
-				if (startColumn <= column && column <= endColumn) {
-					Console.WriteLine ("GetWordRangeAtPosition: '{0}' start={1},length={2}", word, startColumn, word.Length);
-					return new TextSegment (startColumn, word.Length);
-				}
-			}
-
-			return new TextSegment ();
+			this.editor = editor;
+			this.session = session;
 		}
 
-		public static int PositionToOffset (this TextEditor editor, Position position)
+		public async Task FindReferences (DocumentLocation location)
 		{
-			Runtime.AssertMainThread ();
+			try {
+				using (var monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor (true, true)) {
+					Location[] locations = await session.GetReferences (location.CreatePosition ());
 
-			return editor.LocationToOffset (position.Line + 1, position.Character + 1);
+					List<SearchResult> references = locations.Select (CreateSearchResult).ToList ();
+					monitor.ReportResults (references);
+				}
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("FindReferences error.", ex);
+			}
+		}
+
+		SearchResult CreateSearchResult (Location location)
+		{
+			int startOffset = editor.PositionToOffset (location.Range.Start);
+			int endOffset = editor.PositionToOffset (location.Range.End);
+			var provider = new FileProvider (new FilePath (location.Uri), null, startOffset, endOffset);
+			return new SearchResult (provider, startOffset, endOffset - startOffset);
 		}
 	}
 }

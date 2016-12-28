@@ -151,5 +151,21 @@ namespace MonoDevelop.PowerShell
 			};
 			return languageServiceClient.SendRequest (CompletionRequest.Type, position);
 		}
+
+		public Task<Location[]> GetReferences (Position position)
+		{
+			if (languageServiceClient == null)
+				return Task.FromResult (new Location[0]);
+
+			var message = new ReferencesParams {
+				Context = new ReferencesContext {
+					IncludeDeclaration = true
+				},
+				Uri = FileName,
+				Position = position
+			};
+
+			return languageServiceClient.SendRequest (ReferencesRequest.Type, message);
+		}
 	}
 }

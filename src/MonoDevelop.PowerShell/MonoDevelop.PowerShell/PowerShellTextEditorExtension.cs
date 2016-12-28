@@ -30,6 +30,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
+using MonoDevelop.Components.Commands;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
 using MonoDevelop.Ide.CodeCompletion;
@@ -133,6 +134,24 @@ namespace MonoDevelop.PowerShell
 				PowerShellLoggingService.LogError ("HandleCodeCompletionAsync error.", ex);
 			}
 			return null;
+		}
+
+		[CommandUpdateHandler (PowerShellCommands.FindReferences)]
+		void UpdateFindReferences (CommandInfo info)
+		{
+			TextSegment wordSegment = Editor.GetWordRangeAtPosition (Editor.CaretColumn, Editor.GetLine (Editor.CaretLine));
+			info.Enabled = !wordSegment.IsEmpty;
+		}
+
+		[CommandHandler (PowerShellCommands.FindReferences)]
+		void FindReferences ()
+		{
+			try {
+				var finder = new PowerShellReferencesFinder (Editor, session);
+				finder.FindReferences (Editor.CaretLocation);
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("FindReferences error.", ex);
+			}
 		}
 	}
 }
