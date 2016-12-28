@@ -94,6 +94,12 @@ namespace MonoDevelop.PowerShell
 				case CompletionItemKind.Enum:
 				return Stock.Enum;
 
+				case CompletionItemKind.Variable:
+				return "md-variable";
+
+				case CompletionItemKind.File:
+				return Stock.EmptyFileIcon;
+
 				default:
 				return null;
 			}
