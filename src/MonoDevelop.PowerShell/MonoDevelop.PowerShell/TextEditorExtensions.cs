@@ -48,8 +48,8 @@ namespace MonoDevelop.PowerShell
 				int endWord = match.Index + match.Length;
 				int startWord = match.Index;
 
-				int startColumn = startWord + 1;
-				int endColumn = endWord + 1;
+				int startColumn = startWord;
+				int endColumn = endWord;
 
 				if (startColumn <= column && column <= endColumn) {
 					Console.WriteLine ("GetWordRangeAtPosition: '{0}' start={1},length={2}", word, startColumn, word.Length);
