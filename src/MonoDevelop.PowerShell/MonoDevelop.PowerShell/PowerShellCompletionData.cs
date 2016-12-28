@@ -24,12 +24,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.CodeCompletion;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
-using MonoDevelop.Ide.Editor;
 using MonoDevelop.Core;
+using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.Editor.Extension;
 
 namespace MonoDevelop.PowerShell
 {
@@ -45,8 +43,14 @@ namespace MonoDevelop.PowerShell
 
 		public CompletionItem CompletionItem { get; private set; }
 
+		/// <summary>
+		/// Returns InsertText instead of Label so parameters are handled (e.g. -path).
+		/// VSCode shows only the parameter name without the '-'. It is simpler to
+		/// show the '-' as part of the text in the code completion list in MonoDevelop
+		/// than to support it as VSCode does.
+		/// </summary>
 		public override string DisplayText {
-			get { return CompletionItem.Label; }
+			get { return CompletionItem.InsertText; }
 			set { base.DisplayText = value; }
 		}
 
