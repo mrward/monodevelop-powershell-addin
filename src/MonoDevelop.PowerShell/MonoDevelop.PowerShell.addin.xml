@@ -74,6 +74,10 @@
 				id="MonoDevelop.Ide.Commands.EditCommands.Rename"
 				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
 				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
+			<CommandItem
+				id="MonoDevelop.Ide.Commands.HelpCommands.Help"
+				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
+				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
 		</Condition>
 	</Extension>
 </ExtensionModel>

@@ -181,5 +181,13 @@ namespace MonoDevelop.PowerShell
 
 			return languageServiceClient.SendRequest (ReferencesRequest.Type, message);
 		}
+
+		public void ShowOnlineHelp (string text)
+		{
+			if (languageServiceClient == null)
+				return;
+
+			languageServiceClient.SendRequest (ShowOnlineHelpRequest.Type, text);
+		}
 	}
 }

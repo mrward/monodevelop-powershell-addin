@@ -206,5 +206,22 @@ namespace MonoDevelop.PowerShell
 
 			return new ParameterHintingResult (parameterDataItems, completionContext.TriggerOffset);
 		}
+
+		[CommandHandler (HelpCommands.Help)]
+		void OnHelp ()
+		{
+			string word = GetWordAtCaret ();
+			session.ShowOnlineHelp (word);
+		}
+
+		string GetWordAtCaret ()
+		{
+			TextSegment wordSegment = Editor.GetWordRangeAtPosition (Editor.CaretColumn, Editor.GetLine (Editor.CaretLine));
+			if (!wordSegment.IsEmpty) {
+				string line = Editor.GetLineText (Editor.CaretLine);
+				return line.Substring (wordSegment.Offset, wordSegment.Length);
+			}
+			return null;
+		}
 	}
 }
