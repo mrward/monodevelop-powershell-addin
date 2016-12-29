@@ -64,7 +64,19 @@
 			_label="PowerShell Editor Services" />
 	</Extension>
 
-	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+	<Extension path="/MonoDevelop/Ide/Commands">
+		<Category id="PowerShell" _name="PowerShell">
+			<Command
+				id="MonoDevelop.PowerShell.PowerShellCommands.Stop"
+				icon="gtk-stop"
+				macShortcut="Shift|Meta|Return Shift|F5"
+				shortcut="Shift|F5"
+				_description="Stop current build or application execution"
+				_label="_Stop" />
+		</Category>
+	</Extension>
+
+	<Extension path="/MonoDevelop/SourceEditor2/ContextMenu/Editor">
 		<Condition id="FileType" fileExtensions=".ps1,.psm1,.psd1">
 			<CommandItem
 				id="MonoDevelop.Refactoring.RefactoryCommands.FindReferences"
@@ -78,6 +90,22 @@
 				id="MonoDevelop.Ide.Commands.HelpCommands.Help"
 				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
 				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
+			<CommandItem
+				id="MonoDevelop.Debugger.DebugCommands.Debug"
+				insertafter="Separator1"
+				insertbefore="MonoDevelop.Debugger.DebugCommands.RunToCursor" />
+			<CommandItem
+				id="MonoDevelop.PowerShell.PowerShellCommands.Stop"
+				insertafter="Separator1"
+				insertbefore="MonoDevelop.Debugger.DebugCommands.RunToCursor" />
 		</Condition>
+	</Extension>
+
+	<Extension path="/MonoDevelop/Debugging/DebuggerEngines">
+		<DebuggerEngine
+			id="MonoDevelop.PowerShell"
+			name="PowerShell Debugger"
+			features="Breakpoints, Pause, Stepping, DebugFile"
+			type="MonoDevelop.PowerShell.PowerShellDebuggerEngine" />
 	</Extension>
 </ExtensionModel>

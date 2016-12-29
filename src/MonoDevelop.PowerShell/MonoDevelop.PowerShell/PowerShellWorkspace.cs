@@ -57,7 +57,7 @@ namespace MonoDevelop.PowerShell
 			return IsSupported (document.FileName);
 		}
 
-		static bool IsSupported (FilePath fileName)
+		public static bool IsSupported (FilePath fileName)
 		{
 			return fileName.HasExtension (".ps1") ||
 				fileName.HasExtension (".psd1") ||

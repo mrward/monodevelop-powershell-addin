@@ -57,6 +57,9 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellCommands.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellReferencesFinder.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellParameterHintingData.cs" />
+    <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellDebuggerEngine.cs" />
+    <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellDebuggerSession.cs" />
+    <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellDebugAdapterClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

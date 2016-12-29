@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellCommands.cs
+// PowerShellDebuggerEngine.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -24,10 +24,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using Mono.Debugging.Client;
+using MonoDevelop.Core;
+using MonoDevelop.Core.Execution;
+using MonoDevelop.Debugger;
+
 namespace MonoDevelop.PowerShell
 {
-	enum PowerShellCommands
+	class PowerShellDebuggerEngine : DebuggerEngineBackend
 	{
-		Stop
+		public override bool CanDebugCommand (ExecutionCommand cmd)
+		{
+			var nativeCmd = cmd as NativeExecutionCommand;
+			if (nativeCmd != null) {
+				var fileName = new FilePath (nativeCmd.Command);
+				return PowerShellWorkspace.IsSupported (fileName);
+			}
+
+			return false;
+		}
+
+		public override DebuggerStartInfo CreateDebuggerStartInfo (ExecutionCommand cmd)
+		{
+			var nativeCmd = (NativeExecutionCommand)cmd;
+			return new DebuggerStartInfo {
+				Command = nativeCmd.Command,
+				WorkingDirectory = nativeCmd.WorkingDirectory
+			};
+		}
+
+		public override DebuggerSession CreateSession ()
+		{
+			return new PowerShellDebuggerSession ();
+		}
 	}
 }

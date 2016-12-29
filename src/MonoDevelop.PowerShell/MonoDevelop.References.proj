@@ -28,5 +28,13 @@
       <Private>False</Private>
       <HintPath>$(MDBinDir)\..\AddIns\MonoDevelop.Refactoring\MonoDevelop.Refactoring.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Debugging">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Mono.Debugging.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoDevelop.Debugger">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\..\AddIns\MonoDevelop.Debugger\MonoDevelop.Debugger.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

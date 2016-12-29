@@ -50,6 +50,15 @@ namespace MonoDevelop.PowerShell
 
 		public FilePath FileName { get; private set; }
 
+		public int DebugServicePort {
+			get {
+				if (process?.SessionDetails != null) {
+					return process.SessionDetails.DebugServicePort;
+				}
+				return -1;
+			}
+		}
+
 		public void Start ()
 		{
 			process = new PowerShellProcess ();

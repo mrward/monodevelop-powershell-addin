@@ -33,6 +33,8 @@ using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
+using MonoDevelop.Debugger;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
@@ -222,6 +224,18 @@ namespace MonoDevelop.PowerShell
 				return line.Substring (wordSegment.Offset, wordSegment.Length);
 			}
 			return null;
+		}
+
+		[CommandHandler (DebugCommands.Debug)]
+		void OnDebug ()
+		{
+			IdeApp.ProjectOperations.DebugFile (Editor.FileName);
+		}
+
+		[CommandHandler (PowerShellCommands.Stop)]
+		void OnStop ()
+		{
+			DebuggingService.Stop ();
 		}
 	}
 }
