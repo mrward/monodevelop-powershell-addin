@@ -24,5 +24,9 @@
       <Private>False</Private>
       <HintPath>$(MDBinDir)\Microsoft.CodeAnalysis.dll</HintPath>
     </Reference>
+    <Reference Include="MonoDevelop.Refactoring">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\..\AddIns\MonoDevelop.Refactoring\MonoDevelop.Refactoring.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

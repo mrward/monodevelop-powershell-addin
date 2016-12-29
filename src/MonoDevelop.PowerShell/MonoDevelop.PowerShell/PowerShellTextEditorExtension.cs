@@ -38,6 +38,7 @@ using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
 using MonoDevelop.Ide.TypeSystem;
+using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.PowerShell
 {
@@ -148,13 +149,13 @@ namespace MonoDevelop.PowerShell
 			return wordSegment.IsEmpty;
 		}
 
-		[CommandUpdateHandler (PowerShellCommands.FindReferences)]
+		[CommandUpdateHandler (RefactoryCommands.FindReferences)]
 		void UpdateFindReferences (CommandInfo info)
 		{
 			info.Enabled = !IsWordAtCurrentCaretPosition ();
 		}
 
-		[CommandHandler (PowerShellCommands.FindReferences)]
+		[CommandHandler (RefactoryCommands.FindReferences)]
 		void FindReferences ()
 		{
 			var finder = new PowerShellReferencesFinder (Editor, session);

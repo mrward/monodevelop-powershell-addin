@@ -37,5 +37,6 @@ using Mono.Addins;
 
 [assembly:AddinDependency ("Core", "6.0")]
 [assembly:AddinDependency ("Ide", "6.0")]
+[assembly:AddinDependency ("Refactoring", "6.0")]
 [assembly:AddinDependency ("SourceEditor2", "6.0")]
 
