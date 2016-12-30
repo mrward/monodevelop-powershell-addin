@@ -25,7 +25,9 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
@@ -37,15 +39,18 @@ namespace MonoDevelop.PowerShell
 {
 	class PowerShellThreadBacktrace : IBacktrace
 	{
+		PowerShellDebuggerSession debugSession;
 		StackFrame[] frames;
 
-		public PowerShellThreadBacktrace (StackTraceResponseBody body)
+		public PowerShellThreadBacktrace (PowerShellDebuggerSession debugSession, StackTraceResponseBody body)
 		{
+			this.debugSession = debugSession;
 			frames = body.StackFrames.Select (frame => CreateDebuggerStackFrame (frame)).ToArray ();
 		}
 
-		public PowerShellThreadBacktrace (StoppedEventBody body)
+		public PowerShellThreadBacktrace (PowerShellDebuggerSession debugSession, StoppedEventBody body)
 		{
+			this.debugSession = debugSession;
 			if (body != null) {
 				frames = new [] {
 					CreateDebuggerStackFrame (body)
@@ -96,7 +101,59 @@ namespace MonoDevelop.PowerShell
 
 		public ObjectValue[] GetAllLocals (int frameIndex, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			StackFrame frame = frames[frameIndex];
+			return new [] {
+				GetTopLevelScopesObjectValueAsync (frame, options)
+			};
+		}
+
+		ObjectValue GetTopLevelScopesObjectValueAsync (StackFrame frame, EvaluationOptions options)
+		{
+			return debugSession.CreateObjectValueAsync ("Scopes", ObjectValueFlags.EvaluatingGroup, () => {
+				return GetTopLevelScopesObjectValue (frame.Address, options);
+			});
+		}
+
+		ObjectValue GetTopLevelScopesObjectValue (long frameAddress, EvaluationOptions options)
+		{
+			var task = GetScopesObjectValuesAsync (frameAddress, options);
+			if (task.Wait (2000)) {
+				return ObjectValue.CreateArray (null, new ObjectPath ("Scopes"), null, task.Result.Length, ObjectValueFlags.Group, task.Result);
+			}
+			return new ObjectValue ();
+		}
+
+		async Task<ObjectValue[]> GetScopesObjectValuesAsync (long frameAddress, EvaluationOptions options)
+		{
+			ScopesResponseBody scopeResponse = await debugSession.GetScopes ((int)frameAddress);
+
+			var locals = new List<ObjectValue> ();
+			foreach (Scope scope in scopeResponse.Scopes) {
+				locals.Add (new ObjectValue {
+					Name = scope.Name
+				});
+				//var variableMessage = new VariablesRequestArguments {
+				//	VariablesReference = scope.VariablesReference
+				//};
+				//VariablesResponseBody variableResponse = await debugClient.SendRequest (VariablesRequest.Type, variableMessage);
+
+				//locals.AddRange (GetObjectValues (variableResponse));
+			}
+
+			return locals.ToArray ();
+		}
+
+		IEnumerable<ObjectValue> GetObjectValues (VariablesResponseBody response)
+		{
+			return response.Variables.Select (CreateObjectValue);
+		}
+
+		ObjectValue CreateObjectValue (Variable variable)
+		{
+			return new ObjectValue {
+				Name = variable.Name,
+				Value = variable.Value
+			};
 		}
 
 		public ExceptionInfo GetException (int frameIndex, EvaluationOptions options)
@@ -121,7 +178,7 @@ namespace MonoDevelop.PowerShell
 
 		public ObjectValue[] GetParameters (int frameIndex, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			return new ObjectValue[0];
 		}
 
 		public StackFrame[] GetStackFrames (int firstIndex, int lastIndex)
@@ -131,7 +188,7 @@ namespace MonoDevelop.PowerShell
 
 		public ObjectValue GetThisReference (int frameIndex, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			return null;
 		}
 
 		public ValidationResult ValidateExpression (int frameIndex, string expression, EvaluationOptions options)

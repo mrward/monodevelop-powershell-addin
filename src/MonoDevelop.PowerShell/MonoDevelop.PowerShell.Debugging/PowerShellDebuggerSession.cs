@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Mono.Debugging.Client;
+using Mono.Debugging.Evaluation;
 using MonoDevelop.Core;
 
 using Breakpoint = Mono.Debugging.Client.Breakpoint;
@@ -41,6 +42,7 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellSession session;
 		PowerShellDebugAdapterClient debugClient;
+		AsyncEvaluationTracker evaluationTracker = new AsyncEvaluationTracker ();
 		Dictionary<BreakEvent, BreakEventInfo> breakpoints = new Dictionary<BreakEvent, BreakEventInfo> ();
 		bool breakpointsSetBeforeScriptLaunch;
 		StoppedEventBody currentStoppedEventBody;
@@ -98,10 +100,10 @@ namespace MonoDevelop.PowerShell
 			Task<StackTraceResponseBody> task = GetStackTrace ();
 			if (task.Wait (1000)) {
 				StackTraceResponseBody body = task.Result;
-				return new Backtrace (new PowerShellThreadBacktrace (body));
+				return new Backtrace (new PowerShellThreadBacktrace (this, body));
 			}
 
-			return new Backtrace (new PowerShellThreadBacktrace (currentStoppedEventBody));
+			return new Backtrace (new PowerShellThreadBacktrace (this, currentStoppedEventBody));
 		}
 
 		Task<StackTraceResponseBody> GetStackTrace ()
@@ -311,6 +313,35 @@ namespace MonoDevelop.PowerShell
 				default:
 				return TargetEventType.TargetStopped;
 			}
+		}
+
+		public override void Dispose ()
+		{
+			try {
+				base.Dispose ();
+
+				if (evaluationTracker != null) {
+					evaluationTracker.Dispose ();
+				}
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("DebuggerSession.Dispose error", ex);
+			}
+		}
+
+		internal Task<ScopesResponseBody> GetScopes (int frameId)
+		{
+			var message = new ScopesRequestArguments {
+				FrameId = frameId
+			};
+			return debugClient.SendRequest (ScopesRequest.Type, message);
+		}
+
+		internal ObjectValue CreateObjectValueAsync (
+			string name,
+			ObjectValueFlags flags,
+			ObjectEvaluatorDelegate evaluator)
+		{
+			return evaluationTracker.Run (name, flags, evaluator);
 		}
 	}
 }
