@@ -25,10 +25,15 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
+using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Mono.Debugging.Client;
 using MonoDevelop.Core;
-using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
-using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
+
+using Breakpoint = Mono.Debugging.Client.Breakpoint;
 
 namespace MonoDevelop.PowerShell
 {
@@ -36,6 +41,9 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellSession session;
 		PowerShellDebugAdapterClient debugClient;
+		Dictionary<BreakEvent, BreakEventInfo> breakpoints = new Dictionary<BreakEvent, BreakEventInfo> ();
+		bool breakpointsSetBeforeScriptLaunch;
+		StoppedEventBody currentStoppedEventBody;
 
 		protected override void OnAttachToProcess (long processId)
 		{
@@ -66,6 +74,7 @@ namespace MonoDevelop.PowerShell
 				debugClient = null;
 
 				if (client != null) {
+					await client.SendRequest (DisconnectRequest.Type, null);
 					await client.Stop ();
 				}
 			} catch (Exception ex) {
@@ -79,22 +88,88 @@ namespace MonoDevelop.PowerShell
 
 		protected override ProcessInfo[] OnGetProcesses ()
 		{
-			throw new NotImplementedException ();
+			return new [] {
+				new ProcessInfo (1, "powershell")
+			};
 		}
 
 		protected override Backtrace OnGetThreadBacktrace (long processId, long threadId)
 		{
-			throw new NotImplementedException ();
+			Task<StackTraceResponseBody> task = GetStackTrace ();
+			if (task.Wait (1000)) {
+				StackTraceResponseBody body = task.Result;
+				return new Backtrace (new PowerShellThreadBacktrace (body));
+			}
+
+			return new Backtrace (new PowerShellThreadBacktrace (currentStoppedEventBody));
+		}
+
+		Task<StackTraceResponseBody> GetStackTrace ()
+		{
+			var message = new StackTraceRequestArguments ();
+			return debugClient.SendRequest (StackTraceRequest.Type, message);
 		}
 
 		protected override ThreadInfo[] OnGetThreads (long processId)
 		{
-			throw new NotImplementedException ();
+			return new [] {
+				new ThreadInfo (processId, 1, "Main Thread", string.Empty)
+			};
 		}
 
 		protected override BreakEventInfo OnInsertBreakEvent (BreakEvent breakEvent)
 		{
-			throw new NotImplementedException ();
+			var breakpoint = breakEvent as Breakpoint;
+			if (breakpoint != null) {
+				var breakEventInfo = new BreakEventInfo ();
+				breakpoints.Add (breakpoint, breakEventInfo);
+
+				if (breakpointsSetBeforeScriptLaunch) {
+					UpdateBreakpoints (breakpoint.FileName);
+				}
+
+				return breakEventInfo;
+			}
+
+			return null;
+		}
+
+		SourceBreakpoint CreateSourceBreakpoint (Breakpoint breakpoint)
+		{
+			return new SourceBreakpoint {
+				Condition = breakpoint.ConditionExpression,
+				Column = breakpoint.Column,
+				Line = breakpoint.Line
+			};
+		}
+
+		Task UpdateBreakpoints (string fileName)
+		{
+			var breakpointsForFile = GetBreakpointsForFile (fileName).ToList ();
+			return UpdateBreakpoints (fileName, breakpointsForFile);
+		}
+
+		async Task UpdateBreakpoints (string fileName, IEnumerable<Breakpoint> breakpointsForFile)
+		{
+			var message = new SetBreakpointsRequestArguments {
+				Source = new Source {
+					Path = fileName
+				},
+				Breakpoints = breakpointsForFile.Select (CreateSourceBreakpoint).ToArray ()
+			};
+			await debugClient.SendRequest (SetBreakpointsRequest.Type, message);
+		}
+
+		IEnumerable<Breakpoint> GetBreakpointsForFile (string fileName)
+		{
+			foreach (var keyValuePair in breakpoints) {
+				var breakpoint = keyValuePair.Key as Breakpoint;
+				if (breakpoint != null) {
+					if (breakpoint.FileName == fileName) {
+						yield return breakpoint;
+					}
+				}
+			}
 		}
 
 		protected override void OnNextInstruction ()
@@ -109,7 +184,6 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnRemoveBreakEvent (BreakEventInfo eventInfo)
 		{
-			throw new NotImplementedException ();
 		}
 
 		protected override async void OnRun (DebuggerStartInfo startInfo)
@@ -126,15 +200,38 @@ namespace MonoDevelop.PowerShell
 				debugClient = new PowerShellDebugAdapterClient (channel, this);
 				await debugClient.Start ();
 				await debugClient.WaitForConnection ();
+
+				OnStarted ();
+
+				await UpdateBreakpoints ();
 				await debugClient.LaunchScript (startInfo.Command);
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("PowerShellDebuggerSession.OnRun error.", ex);
 			}
 		}
 
+		async Task UpdateBreakpoints ()
+		{
+			foreach (var grouping in breakpoints.Keys.OfType<Breakpoint> ()
+				.GroupBy (breakEvent => GetFileName (breakEvent))) {
+
+				await UpdateBreakpoints (grouping.Key, grouping);
+			}
+
+			breakpointsSetBeforeScriptLaunch = true;
+		}
+
+		static string GetFileName (BreakEvent breakEvent)
+		{
+			var breakpoint = breakEvent as Breakpoint;
+			if (breakpoint != null) {
+				return breakpoint.FileName;
+			}
+			return string.Empty;
+		}
+
 		protected override void OnSetActiveThread (long processId, long threadId)
 		{
-			throw new NotImplementedException ();
 		}
 
 		protected override void OnStepInstruction ()
@@ -167,11 +264,33 @@ namespace MonoDevelop.PowerShell
 
 		internal void OnStopped (StoppedEventBody body)
 		{
+			// Run a task and do not wait for it since a request for the
+			// current stack frames will not be processed since the OnStopped
+			// method is called from the DebugAdapterClient and will not
+			// process any messages until this method returns.
+			Task.Run (() => OnStoppedInternal (body));
+		}
+
+		void OnStoppedInternal (StoppedEventBody body)
+		{
 			TargetEventType eventType = GetEventType (body.Reason);
 			var eventArgs = new TargetEventArgs (eventType) {
+				Thread = new ThreadInfo (1, body.ThreadId ?? 1, string.Empty, body.Source.Path)
 			};
 
+			if (eventType == TargetEventType.TargetHitBreakpoint) {
+				eventArgs.BreakEvent = GetBreakEvent (body);
+			}
+
+			currentStoppedEventBody = body;
+
 			OnTargetEvent (eventArgs);
+		}
+
+		BreakEvent GetBreakEvent (StoppedEventBody body)
+		{
+			var breakpointsForFile = GetBreakpointsForFile (body.Source.Path);
+			return breakpointsForFile.FirstOrDefault (breakpoint => breakpoint.Line == body.Line);
 		}
 
 		static TargetEventType GetEventType (string reason)

@@ -44,10 +44,10 @@ namespace MonoDevelop.PowerShell
 			this.session = session;
 		}
 
-		protected override Task OnConnect ()
+		protected override async Task OnConnect ()
 		{
+			await base.OnConnect ();
 			taskCompletionSource.SetResult (true);
-			return base.OnConnect ();
 		}
 
 		public Task WaitForConnection ()
