@@ -42,7 +42,6 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellSession session;
 		PowerShellDebugAdapterClient debugClient;
-		AsyncEvaluationTracker evaluationTracker = new AsyncEvaluationTracker ();
 		Dictionary<BreakEvent, BreakEventInfo> breakpoints = new Dictionary<BreakEvent, BreakEventInfo> ();
 		bool breakpointsSetBeforeScriptLaunch;
 		StoppedEventBody currentStoppedEventBody;
@@ -315,19 +314,6 @@ namespace MonoDevelop.PowerShell
 			}
 		}
 
-		public override void Dispose ()
-		{
-			try {
-				base.Dispose ();
-
-				if (evaluationTracker != null) {
-					evaluationTracker.Dispose ();
-				}
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("DebuggerSession.Dispose error", ex);
-			}
-		}
-
 		internal Task<ScopesResponseBody> GetScopes (int frameId)
 		{
 			var message = new ScopesRequestArguments {
@@ -336,12 +322,12 @@ namespace MonoDevelop.PowerShell
 			return debugClient.SendRequest (ScopesRequest.Type, message);
 		}
 
-		internal ObjectValue CreateObjectValueAsync (
-			string name,
-			ObjectValueFlags flags,
-			ObjectEvaluatorDelegate evaluator)
+		internal Task<VariablesResponseBody> GetVariables (int reference)
 		{
-			return evaluationTracker.Run (name, flags, evaluator);
+			var variableMessage = new VariablesRequestArguments {
+				VariablesReference = reference
+			};
+			return debugClient.SendRequest (VariablesRequest.Type, variableMessage);
 		}
 	}
 }

@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
+using MonoDevelop.Core;
 
 using StackFrame = Mono.Debugging.Client.StackFrame;
 using PowerShellStackFrame = Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter.StackFrame;
@@ -109,51 +110,14 @@ namespace MonoDevelop.PowerShell
 
 		ObjectValue GetTopLevelScopesObjectValueAsync (StackFrame frame, EvaluationOptions options)
 		{
-			return debugSession.CreateObjectValueAsync ("Scopes", ObjectValueFlags.EvaluatingGroup, () => {
-				return GetTopLevelScopesObjectValue (frame.Address, options);
-			});
-		}
+			var updater = new PowerShellVariableValueUpdater (debugSession);
+			var path = new ObjectPath ("Scope" + frame.Address.ToString ());
+			var value = ObjectValue.CreateEvaluating (updater, path, ObjectValueFlags.EvaluatingGroup);
+			value.Name = GettextCatalog.GetString ("Scopes");
 
-		ObjectValue GetTopLevelScopesObjectValue (long frameAddress, EvaluationOptions options)
-		{
-			var task = GetScopesObjectValuesAsync (frameAddress, options);
-			if (task.Wait (2000)) {
-				return ObjectValue.CreateArray (null, new ObjectPath ("Scopes"), null, task.Result.Length, ObjectValueFlags.Group, task.Result);
-			}
-			return new ObjectValue ();
-		}
+			updater.UpdateVariableScopes (path, frame.Address);
 
-		async Task<ObjectValue[]> GetScopesObjectValuesAsync (long frameAddress, EvaluationOptions options)
-		{
-			ScopesResponseBody scopeResponse = await debugSession.GetScopes ((int)frameAddress);
-
-			var locals = new List<ObjectValue> ();
-			foreach (Scope scope in scopeResponse.Scopes) {
-				locals.Add (new ObjectValue {
-					Name = scope.Name
-				});
-				//var variableMessage = new VariablesRequestArguments {
-				//	VariablesReference = scope.VariablesReference
-				//};
-				//VariablesResponseBody variableResponse = await debugClient.SendRequest (VariablesRequest.Type, variableMessage);
-
-				//locals.AddRange (GetObjectValues (variableResponse));
-			}
-
-			return locals.ToArray ();
-		}
-
-		IEnumerable<ObjectValue> GetObjectValues (VariablesResponseBody response)
-		{
-			return response.Variables.Select (CreateObjectValue);
-		}
-
-		ObjectValue CreateObjectValue (Variable variable)
-		{
-			return new ObjectValue {
-				Name = variable.Name,
-				Value = variable.Value
-			};
+			return value;
 		}
 
 		public ExceptionInfo GetException (int frameIndex, EvaluationOptions options)
