@@ -24,12 +24,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
-using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
-using System.Linq;
 
 namespace MonoDevelop.PowerShell
 {
@@ -46,13 +47,54 @@ namespace MonoDevelop.PowerShell
 
 		public async Task UpdateVariableScopes (ObjectPath path, long frameAddress)
 		{
-			//var task = debugSession.GetScopes ((int)frameAddress);
-			//if (task.Wait (2000)) {
 			ScopesResponseBody response = await debugSession.GetScopes ((int)frameAddress);
 
-			var values = response.Scopes.Select (scope => new ObjectValue { Name = scope.Name }).ToArray ();
-			var result = ObjectValue.CreateArray (null, path, string.Empty, values.Length, ObjectValueFlags.EvaluatingGroup, values);
+			var values = response.Scopes.Select (CreateObjectValue).ToArray ();
+			var result = ObjectValueFactory.CreateEvaluatingGroupArray (path, values);
 			OnObjectValueUpdated (path[0], result);
+		}
+
+		ObjectValue CreateObjectValue (Scope scope)
+		{
+			ObjectValue value = null;
+			var path = new ObjectPath (scope.Name + scope.VariablesReference.ToString ());
+			var valueSource = new PowerShellVariableObjectValueSource (debugSession, scope.VariablesReference);
+
+			if (scope.VariablesReference == 0) {
+				value = ObjectValueFactory.CreateVariable (valueSource, path);
+			} else {
+				value = ObjectValueFactory.CreateObject (valueSource, path);
+			}
+
+			value.Name = scope.Name;
+
+			return value;
+		}
+
+		public async Task UpdateVariables (ObjectPath path, int variablesReference)
+		{
+			VariablesResponseBody response = await debugSession.GetVariables (variablesReference);
+
+			var values = response.Variables.Select (CreateObjectValue).ToArray ();
+			var result = ObjectValueFactory.CreateEvaluatingGroupArray (path, values);
+			OnObjectValueUpdated (path[0], result);
+		}
+
+		ObjectValue CreateObjectValue (Variable variable)
+		{
+			var path = new ObjectPath (variable.VariablesReference.ToString ());
+			var valueSource = new PowerShellVariableObjectValueSource (debugSession, variable);
+
+			ObjectValue value = null;
+			if (variable.VariablesReference == 0) {
+				value = ObjectValueFactory.CreateVariable (valueSource, path, variable.Value);
+			} else {
+				value = ObjectValueFactory.CreateObject (valueSource, path, variable.Value);
+			}
+
+			value.Name = variable.Name;
+
+			return value;
 		}
 
 		public void RegisterUpdateCallbacks (UpdateCallback[] callbacks)

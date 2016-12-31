@@ -62,6 +62,8 @@
     <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellDebugAdapterClient.cs" />
     <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellThreadBacktrace.cs" />
     <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellVariableValueUpdater.cs" />
+    <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellVariableObjectValueSource.cs" />
+    <Compile Include="MonoDevelop.PowerShell.Debugging\ObjectValueFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
