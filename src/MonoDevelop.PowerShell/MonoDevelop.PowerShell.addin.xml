@@ -90,10 +90,6 @@
 				id="MonoDevelop.Ide.Commands.HelpCommands.Help"
 				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
 				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
-			<CommandItem
-				id="MonoDevelop.PowerShell.PowerShellCommands.Stop"
-				insertafter="Separator1"
-				insertbefore="MonoDevelop.Debugger.DebugCommands.RunToCursor" />
 		</Condition>
 	</Extension>
 

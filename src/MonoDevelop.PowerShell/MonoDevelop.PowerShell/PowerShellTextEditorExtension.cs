@@ -232,7 +232,7 @@ namespace MonoDevelop.PowerShell
 			IdeApp.ProjectOperations.DebugFile (Editor.FileName);
 		}
 
-		[CommandHandler (PowerShellCommands.Stop)]
+		[CommandHandler (ProjectCommands.Stop)]
 		void OnStop ()
 		{
 			DebuggingService.Stop ();
