@@ -91,10 +91,6 @@
 				insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
 				insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
 			<CommandItem
-				id="MonoDevelop.Debugger.DebugCommands.Debug"
-				insertafter="Separator1"
-				insertbefore="MonoDevelop.Debugger.DebugCommands.RunToCursor" />
-			<CommandItem
 				id="MonoDevelop.PowerShell.PowerShellCommands.Stop"
 				insertafter="Separator1"
 				insertbefore="MonoDevelop.Debugger.DebugCommands.RunToCursor" />
