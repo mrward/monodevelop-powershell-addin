@@ -226,6 +226,12 @@ namespace MonoDevelop.PowerShell
 			return null;
 		}
 
+		[CommandUpdateHandler (DebugCommands.Debug)]
+		void OnDebug (CommandInfo info)
+		{
+			info.Enabled = !DebuggingService.IsDebugging;
+		}
+
 		[CommandHandler (DebugCommands.Debug)]
 		void OnDebug ()
 		{
