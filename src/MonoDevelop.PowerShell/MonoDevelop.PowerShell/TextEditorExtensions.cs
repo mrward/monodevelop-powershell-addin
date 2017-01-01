@@ -52,7 +52,7 @@ namespace MonoDevelop.PowerShell
 				int endColumn = endWord;
 
 				if (startColumn <= column && column <= endColumn) {
-					Console.WriteLine ("GetWordRangeAtPosition: '{0}' start={1},length={2}", word, startColumn, word.Length);
+					// Console.WriteLine ("GetWordRangeAtPosition: '{0}' start={1},length={2}", word, startColumn, word.Length);
 					return new TextSegment (startColumn, word.Length);
 				}
 			}
