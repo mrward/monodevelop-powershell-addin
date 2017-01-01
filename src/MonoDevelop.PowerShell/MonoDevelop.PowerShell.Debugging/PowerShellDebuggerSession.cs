@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Mono.Debugging.Client;
-using Mono.Debugging.Evaluation;
 using MonoDevelop.Core;
 
 using Breakpoint = Mono.Debugging.Client.Breakpoint;
@@ -45,6 +44,7 @@ namespace MonoDevelop.PowerShell
 		Dictionary<BreakEvent, BreakEventInfo> breakpoints = new Dictionary<BreakEvent, BreakEventInfo> ();
 		bool breakpointsSetBeforeScriptLaunch;
 		StoppedEventBody currentStoppedEventBody;
+		int debugCommandTimeout = 5000;
 
 		protected override void OnAttachToProcess (long processId)
 		{
@@ -53,7 +53,7 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnContinue ()
 		{
-			throw new NotImplementedException ();
+			debugClient.SendRequest (ContinueRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
 		protected override void OnDetach ()
@@ -85,6 +85,7 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnFinish ()
 		{
+			debugClient.SendRequest (StepOutRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
 		protected override ProcessInfo[] OnGetProcesses ()
@@ -175,12 +176,12 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnNextInstruction ()
 		{
-			throw new NotImplementedException ();
+			OnNextLine ();
 		}
 
 		protected override void OnNextLine ()
 		{
-			throw new NotImplementedException ();
+			debugClient.SendRequest (NextRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
 		protected override void OnRemoveBreakEvent (BreakEventInfo eventInfo)
@@ -237,16 +238,17 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnStepInstruction ()
 		{
-			throw new NotImplementedException ();
+			OnStepLine ();
 		}
 
 		protected override void OnStepLine ()
 		{
-			throw new NotImplementedException ();
+			debugClient.SendRequest (StepInRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
 		protected override void OnStop ()
 		{
+			debugClient.SendRequest (PauseRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
 		protected override void OnUpdateBreakEvent (BreakEventInfo eventInfo)
