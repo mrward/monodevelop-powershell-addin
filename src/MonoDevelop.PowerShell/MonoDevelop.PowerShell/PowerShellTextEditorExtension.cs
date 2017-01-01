@@ -229,7 +229,8 @@ namespace MonoDevelop.PowerShell
 		[CommandHandler (DebugCommands.Debug)]
 		void OnDebug ()
 		{
-			IdeApp.ProjectOperations.DebugFile (Editor.FileName);
+			var debugOperation = IdeApp.ProjectOperations.DebugFile (Editor.FileName);
+			IdeApp.ProjectOperations.AddRunOperation (debugOperation);
 		}
 
 		[CommandHandler (ProjectCommands.Stop)]
