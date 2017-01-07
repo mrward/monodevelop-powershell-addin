@@ -229,12 +229,23 @@ namespace MonoDevelop.PowerShell
 		[CommandUpdateHandler (DebugCommands.Debug)]
 		void OnDebug (CommandInfo info)
 		{
+			if (DebuggingService.IsPaused) {
+				info.Enabled = true;
+				info.Text = GettextCatalog.GetString ("_Continue Debugging");
+				return;
+			}
+
 			info.Enabled = !DebuggingService.IsDebugging;
 		}
 
 		[CommandHandler (DebugCommands.Debug)]
 		void OnDebug ()
 		{
+			if (DebuggingService.IsPaused) {
+				DebuggingService.Resume ();
+				return;
+			}
+
 			var debugOperation = IdeApp.ProjectOperations.DebugFile (Editor.FileName);
 			IdeApp.ProjectOperations.AddRunOperation (debugOperation);
 		}
