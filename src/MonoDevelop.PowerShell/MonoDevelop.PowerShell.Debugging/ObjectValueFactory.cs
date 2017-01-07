@@ -54,12 +54,26 @@ namespace MonoDevelop.PowerShell
 
 		public static ObjectValue CreateVariable (PowerShellVariableObjectValueSource valueSource, ObjectPath path, string value)
 		{
+			return CreateVariable (valueSource, path, value, ObjectValueFlags.None);
+		}
+
+		static ObjectValue CreateVariable (
+			PowerShellVariableObjectValueSource valueSource,
+			ObjectPath path,
+			string value,
+			ObjectValueFlags flags)
+		{
 			return ObjectValue.CreatePrimitive (
 				valueSource,
 				path,
 				string.Empty,
 				new EvaluationResult (value),
-				ObjectValueFlags.Variable);
+				ObjectValueFlags.Variable | flags);
+		}
+
+		public static ObjectValue CreateReadOnlyVariable (PowerShellVariableObjectValueSource valueSource, ObjectPath path, string value)
+		{
+			return CreateVariable (valueSource, path, value, ObjectValueFlags.ReadOnly);
 		}
 
 		public static ObjectValue CreateEvaluatingGroupArray (ObjectPath path, ObjectValue[] values)

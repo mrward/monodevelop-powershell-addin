@@ -111,7 +111,7 @@ namespace MonoDevelop.PowerShell
 			var valueSource = new PowerShellVariableObjectValueSource (debugSession, response.VariablesReference);
 
 			if (response.VariablesReference == 0) {
-				return ObjectValueFactory.CreateVariable (valueSource, path, response.Result);
+				return ObjectValueFactory.CreateReadOnlyVariable (valueSource, path, response.Result);
 			} else {
 				return ObjectValueFactory.CreateObject (valueSource, path);
 			}
