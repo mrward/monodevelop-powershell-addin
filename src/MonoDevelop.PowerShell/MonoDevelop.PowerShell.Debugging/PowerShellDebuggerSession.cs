@@ -331,5 +331,15 @@ namespace MonoDevelop.PowerShell
 			};
 			return debugClient.SendRequest (VariablesRequest.Type, variableMessage);
 		}
+
+		internal Task<EvaluateResponseBody> EvaluateExpression (int frameId, string expression)
+		{
+			var message = new EvaluateRequestArguments {
+				FrameId = frameId,
+				Expression = expression,
+				Context = "watch"
+			};
+			return debugClient.SendRequest (EvaluateRequest.Type, message);
+		}
 	}
 }

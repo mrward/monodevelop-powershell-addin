@@ -97,6 +97,26 @@ namespace MonoDevelop.PowerShell
 			return value;
 		}
 
+		public async Task GetExpressionValue (ObjectPath path, long frameAddress, string expression)
+		{
+			EvaluateResponseBody response = await debugSession.EvaluateExpression ((int)frameAddress, expression);
+
+			var value = CreateObjectValue (path, response);
+
+			OnObjectValueUpdated (path[0], value);
+		}
+
+		ObjectValue CreateObjectValue (ObjectPath path, EvaluateResponseBody response)
+		{
+			var valueSource = new PowerShellVariableObjectValueSource (debugSession, response.VariablesReference);
+
+			if (response.VariablesReference == 0) {
+				return ObjectValueFactory.CreateVariable (valueSource, path, response.Result);
+			} else {
+				return ObjectValueFactory.CreateObject (valueSource, path);
+			}
+		}
+
 		public void RegisterUpdateCallbacks (UpdateCallback[] callbacks)
 		{
 			foreach (UpdateCallback c in callbacks) {

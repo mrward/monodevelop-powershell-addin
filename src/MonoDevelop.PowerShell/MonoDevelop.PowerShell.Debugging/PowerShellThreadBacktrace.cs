@@ -132,7 +132,8 @@ namespace MonoDevelop.PowerShell
 
 		public ObjectValue[] GetExpressionValues (int frameIndex, string[] expressions, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			StackFrame frame = frames[frameIndex];
+			return expressions.Select (expression => GetExpressionValue (frame.Address, expression)).ToArray ();
 		}
 
 		public ObjectValue[] GetLocalVariables (int frameIndex, EvaluationOptions options)
@@ -157,7 +158,18 @@ namespace MonoDevelop.PowerShell
 
 		public ValidationResult ValidateExpression (int frameIndex, string expression, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			return new ValidationResult (true, null);
+		}
+
+		ObjectValue GetExpressionValue (long frameAddress, string expression)
+		{
+			var updater = new PowerShellVariableValueUpdater (debugSession);
+			var path = new ObjectPath (expression);
+			var value = ObjectValue.CreateEvaluating (updater, path, ObjectValueFlags.Object);
+
+			updater.GetExpressionValue (path, frameAddress, expression);
+
+			return value;
 		}
 	}
 }
