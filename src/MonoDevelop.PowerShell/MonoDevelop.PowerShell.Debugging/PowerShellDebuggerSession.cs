@@ -341,5 +341,15 @@ namespace MonoDevelop.PowerShell
 			};
 			return debugClient.SendRequest (EvaluateRequest.Type, message);
 		}
+
+		internal Task<SetVariableResponseBody> SetVariable (int variablesReference, string name, string value)
+		{
+			var message = new SetVariableRequestArguments {
+				Name = name,
+				Value = value,
+				VariablesReference = variablesReference
+			};
+			return debugClient.SendRequest (SetVariableRequest.Type, message);
+		}
 	}
 }

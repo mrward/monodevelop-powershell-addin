@@ -75,15 +75,15 @@ namespace MonoDevelop.PowerShell
 		{
 			VariablesResponseBody response = await debugSession.GetVariables (variablesReference);
 
-			var values = response.Variables.Select (CreateObjectValue).ToArray ();
+			var values = response.Variables.Select (variable => CreateObjectValue (variable, variablesReference)).ToArray ();
 			var result = ObjectValueFactory.CreateEvaluatingGroupArray (path, values);
 			OnObjectValueUpdated (path[0], result);
 		}
 
-		ObjectValue CreateObjectValue (Variable variable)
+		ObjectValue CreateObjectValue (Variable variable, int variableContainerReferenceId)
 		{
 			var path = new ObjectPath (variable.VariablesReference.ToString ());
-			var valueSource = new PowerShellVariableObjectValueSource (debugSession, variable);
+			var valueSource = new PowerShellVariableObjectValueSource (debugSession, variable, variableContainerReferenceId);
 
 			ObjectValue value = null;
 			if (variable.VariablesReference == 0) {

@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
@@ -36,6 +37,9 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellDebuggerSession debugSession;
 		int variablesReference;
+		string name;
+		int variableContainerReferenceId = -1;
+		bool isString;
 		ObjectValue variableObjectValues;
 
 		public PowerShellVariableObjectValueSource (
@@ -48,10 +52,24 @@ namespace MonoDevelop.PowerShell
 
 		public PowerShellVariableObjectValueSource (
 			PowerShellDebuggerSession debugSession,
-			Variable variable)
+			Variable variable,
+			int variableContainerReferenceId)
 		{
 			this.debugSession = debugSession;
 			this.variablesReference = variable.VariablesReference;
+			this.name = variable.Name;
+			this.variableContainerReferenceId = variableContainerReferenceId;
+
+			isString = IsStringVariable (variable.Value);
+		}
+
+		static bool IsStringVariable (string value)
+		{
+			if (value != null && value.Length > 1) {
+				return (value[0] == '"') &&
+					(value[value.Length - 1] == '"');
+			}
+			return false;
 		}
 
 		public ObjectValue[] GetChildren (ObjectPath path, int index, int count, EvaluationOptions options)
@@ -96,7 +114,31 @@ namespace MonoDevelop.PowerShell
 
 		public EvaluationResult SetValue (ObjectPath path, string value, EvaluationOptions options)
 		{
-			throw new NotImplementedException ();
+			if (isString)
+				value = WrapStringInDoubleQuotes (value);
+
+			var task = SetVariableValueAsync (value);
+			task.Wait (2500);
+			if (task.IsCompleted && task.Result != null) {
+				return new EvaluationResult (task.Result.Value);
+			}
+			return null;
+		}
+
+		static string WrapStringInDoubleQuotes (string value)
+		{
+			if (IsStringVariable (value)) {
+				return value;
+			}
+
+			return "\"" + value + "\"";
+		}
+
+		Task<SetVariableResponseBody> SetVariableValueAsync (string value)
+		{
+			return Task.Run (async () => {
+				return await debugSession.SetVariable (variableContainerReferenceId, name, value);
+			});
 		}
 	}
 }
