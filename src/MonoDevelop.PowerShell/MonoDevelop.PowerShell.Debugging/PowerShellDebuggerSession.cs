@@ -160,6 +160,8 @@ namespace MonoDevelop.PowerShell
 				Breakpoints = breakpointsForFile.Select (CreateSourceBreakpoint).ToArray ()
 			};
 			await debugClient.SendRequest (SetBreakpointsRequest.Type, message);
+
+			UpdateBreakpointStatus (breakpointsForFile, BreakEventStatus.Bound);
 		}
 
 		IEnumerable<Breakpoint> GetBreakpointsForFile (string fileName)
@@ -170,6 +172,16 @@ namespace MonoDevelop.PowerShell
 					if (breakpoint.FileName == fileName) {
 						yield return breakpoint;
 					}
+				}
+			}
+		}
+
+		void UpdateBreakpointStatus (IEnumerable<Breakpoint> breakpointsToUpdate, BreakEventStatus status)
+		{
+			foreach (var breakpoint in breakpointsToUpdate) {
+				BreakEventInfo breakEventInfo = null;
+				if (breakpoints.TryGetValue (breakpoint, out breakEventInfo)) {
+					breakEventInfo.SetStatus (status, null);
 				}
 			}
 		}
