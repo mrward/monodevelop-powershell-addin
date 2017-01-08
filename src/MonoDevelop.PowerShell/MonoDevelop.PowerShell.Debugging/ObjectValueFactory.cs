@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections.Generic;
+using System.Linq;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
 
@@ -78,6 +80,10 @@ namespace MonoDevelop.PowerShell
 
 		public static ObjectValue CreateEvaluatingGroupArray (ObjectPath path, ObjectValue[] values)
 		{
+			// HACK: Workaround bug in ObjectValueTreeView where the order does not match the
+			// array order.
+			values = WorkaroundObjectValueTreeViewBug (values);
+
 			return ObjectValue.CreateArray (
 				null,
 				path,
@@ -85,6 +91,27 @@ namespace MonoDevelop.PowerShell
 				values.Length,
 				ObjectValueFlags.EvaluatingGroup,
 				values);
+		}
+
+		/// <summary>
+		/// If the array is used to replace a single item in the Locals window
+		/// the ObjectValueTreeView adds the items in a different order than the order
+		/// provided. The first array item is used to replace the existing item but then
+		/// the rest are inserted one at a time after the first item which results in
+		/// them being added in reverse order in the ObjectValueTreeView. This method
+		/// works around this by reversing all the items after the first item.
+		/// </summary>
+		static ObjectValue[] WorkaroundObjectValueTreeViewBug (ObjectValue[] values)
+		{
+			if (values.Length <= 1)
+				return values;
+
+			var orderedValues = new List<ObjectValue> ();
+			orderedValues.Add (values[0]);
+
+			orderedValues.AddRange (values.Skip (1).Reverse ());
+
+			return orderedValues.ToArray ();
 		}
 	}
 }
