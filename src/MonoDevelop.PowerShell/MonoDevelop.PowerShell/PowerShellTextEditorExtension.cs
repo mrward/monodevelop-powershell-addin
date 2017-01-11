@@ -247,7 +247,7 @@ namespace MonoDevelop.PowerShell
 			}
 
 			var debugOperation = IdeApp.ProjectOperations.DebugFile (Editor.FileName);
-			IdeApp.ProjectOperations.AddRunOperation (debugOperation);
+			IdeApp.ProjectOperations.CurrentRunOperation = debugOperation;
 		}
 
 		[CommandHandler (ProjectCommands.Stop)]
