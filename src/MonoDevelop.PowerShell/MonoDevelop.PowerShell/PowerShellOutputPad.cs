@@ -75,12 +75,16 @@ namespace MonoDevelop.PowerShell
 
 		public static void WriteText (string message)
 		{
-			logView.WriteText (message + Environment.NewLine);
+			Runtime.RunInMainThread (() => {
+				logView.WriteText (message + Environment.NewLine);
+			});
 		}
 
 		public static void WriteError (string message)
 		{
-			logView.WriteError (message + Environment.NewLine);
+			Runtime.RunInMainThread (() => {
+				logView.WriteError (message + Environment.NewLine);
+			});
 		}
 	}
 }
