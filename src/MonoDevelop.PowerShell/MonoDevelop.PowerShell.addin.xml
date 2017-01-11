@@ -39,7 +39,7 @@
 		<FileFilter
 			id="PowerShellFiles"
 			_label="PowerShell Files"
-			extensions="*.ps1;*.psm1*.psd1" />
+			extensions="*.ps1;*.psm1;*.psd1" />
 	</Extension>
 
 	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
