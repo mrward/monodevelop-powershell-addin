@@ -24,7 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.IO;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.PowerShell
 {
@@ -50,11 +52,30 @@ namespace MonoDevelop.PowerShell
 
 		void FindPowerShellPath ()
 		{
-			PowerShellExePath = "/usr/local/bin/powershell";
+			if (Platform.IsWindows) {
+				PowerShellExePath = GetWindowsPowerShellExePath ();
+			} else if (Platform.IsMac) {
+				PowerShellExePath = "/usr/local/bin/powershell";
+			} else {
+				PowerShellExePath = "/usr/bin/powershell";
+			}
+
 			PowerShellPathExists = File.Exists (PowerShellExePath);
 			if (!PowerShellPathExists) {
 				PowerShellExePath = null;
 			}
+		}
+
+		static string GetWindowsPowerShellExePath ()
+		{
+			bool use32Bit = true;
+			string windowsFolder = Environment.GetFolderPath (Environment.SpecialFolder.Windows);
+			string processorArchitecture = Environment.GetEnvironmentVariable ("PROCESSOR_ARCHITEW6432");
+			if (use32Bit || string.IsNullOrEmpty (processorArchitecture)) {
+				return Path.Combine (windowsFolder, @"System32\WindowsPowerShell\v1.0\powershell.exe");
+			}
+
+			return Path.Combine (windowsFolder, @"Sysnative\WindowsPowerShell\v1.0\powershell.exe");
 		}
 	}
 }
