@@ -48,6 +48,10 @@ namespace MonoDevelop.PowerShell
 			arguments.Append ("-NoProfile ");
 			arguments.Append ("-NonInteractive ");
 
+			if (Platform.IsWindows) {
+				arguments.Append ("-ExecutionPolicy Unrestricted ");
+			}
+
 			AppendSingleQuotedParameter ("-Command &", PowerShellScriptPath);
 
 			AppendSingleQuotedParameter ("-EditorServicesVersion", RequiredEditorServicesVersion);
