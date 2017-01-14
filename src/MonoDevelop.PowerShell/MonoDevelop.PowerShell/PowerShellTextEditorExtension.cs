@@ -52,13 +52,17 @@ namespace MonoDevelop.PowerShell
 		protected override void Initialize ()
 		{
 			PowerShellServices.Activate ();
-
-			session = PowerShellServices.Workspace.GetSession (Editor.FileName);
+			session = PowerShellServices.Workspace.GetSession (DocumentContext.Name);
 			session.OnDiagnostics += OnDiagnostics;
 
 			Editor.TextChanging += TextChanging;
 
 			base.Initialize ();
+		}
+
+		public override bool IsValidInContext (DocumentContext context)
+		{
+			return PowerShellWorkspace.IsSupported (context.Name);
 		}
 
 		public override void Dispose ()

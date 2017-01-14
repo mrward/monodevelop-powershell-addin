@@ -49,7 +49,6 @@
 	<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
 		<Class
 			id="PowerShellTextEditorExtension"
-			fileExtensions=".ps1, .psd1, .psm1"
 			class="MonoDevelop.PowerShell.PowerShellTextEditorExtension" />
 	</Extension>
 
