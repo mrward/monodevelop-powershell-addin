@@ -255,5 +255,22 @@ namespace MonoDevelop.PowerShell
 		{
 			DebuggingService.Stop ();
 		}
+
+		[CommandUpdateHandler (ProjectCommands.Run)]
+		void OnUpdateRun (CommandInfo info)
+		{
+			if (!IdeApp.ProjectOperations.CurrentRunOperation.IsCompleted) {
+				info.Enabled = false;
+			}
+
+			info.Enabled =  IdeApp.ProjectOperations.CanExecuteFile (Editor.FileName, Runtime.ProcessService.DefaultExecutionHandler);
+		}
+
+		[CommandHandler (ProjectCommands.Run)]
+		void OnRun ()
+		{
+			var runOperation = IdeApp.ProjectOperations.ExecuteFile (Editor.FileName, Runtime.ProcessService.DefaultExecutionHandler);
+			IdeApp.ProjectOperations.CurrentRunOperation = runOperation;
+		}
 	}
 }

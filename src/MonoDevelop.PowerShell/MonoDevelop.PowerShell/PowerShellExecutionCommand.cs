@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellDebuggerEngine.cs
+// PowerShellExecutionCommand.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -24,32 +24,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Mono.Debugging.Client;
+using System;
+using System.IO;
+using System.Text;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Execution;
-using MonoDevelop.Debugger;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellDebuggerEngine : DebuggerEngineBackend
+	class PowerShellExecutionCommand : NativeExecutionCommand
 	{
-		public override bool CanDebugCommand (ExecutionCommand cmd)
+		public PowerShellExecutionCommand (string scriptFileName)
 		{
-			return cmd is PowerShellExecutionCommand;
+			Arguments = GetArguments (scriptFileName);
+			Command = PowerShellPathLocator.PowerShellPath;
+			ScriptFileName = scriptFileName;
 		}
 
-		public override DebuggerStartInfo CreateDebuggerStartInfo (ExecutionCommand cmd)
+		string GetArguments (string scriptFileName)
 		{
-			var powerShellCommand = (PowerShellExecutionCommand)cmd;
-			return new DebuggerStartInfo {
-				Command = powerShellCommand.ScriptFileName,
-				WorkingDirectory = powerShellCommand.WorkingDirectory
-			};
+			var arguments = new StringBuilder ();
+
+			if (Platform.IsWindows) {
+				arguments.Append ("-ExecutionPolicy Unrestricted ");
+			}
+
+			arguments.Append ("-Command & \"" + scriptFileName + "\"");
+
+			return arguments.ToString ();
 		}
 
-		public override DebuggerSession CreateSession ()
+		public string ScriptFileName { get; private set; }
+
+		public static bool CanExecute (string path)
 		{
-			return new PowerShellDebuggerSession ();
+			if (!PowerShellPathLocator.Exists)
+				return false;
+
+			if (path == null)
+				return false;
+
+			string extension = Path.GetExtension (path);
+			return StringComparer.OrdinalIgnoreCase.Equals (extension, ".ps1");
 		}
 	}
 }

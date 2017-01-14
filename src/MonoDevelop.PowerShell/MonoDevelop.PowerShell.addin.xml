@@ -88,4 +88,8 @@
 			features="Breakpoints, Pause, Stepping, DebugFile"
 			type="MonoDevelop.PowerShell.PowerShellDebuggerEngine" />
 	</Extension>
+
+	<Extension path="/MonoDevelop/Core/CommandFactories">
+		<Type id="PowerShell" class="MonoDevelop.PowerShell.PowerShellCommandFactory" />
+	</Extension>
 </ExtensionModel>

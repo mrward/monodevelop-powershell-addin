@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellDebuggerEngine.cs
+// PowerShellCommandFactory.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -24,32 +24,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Mono.Debugging.Client;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Execution;
-using MonoDevelop.Debugger;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellDebuggerEngine : DebuggerEngineBackend
+	class PowerShellCommandFactory : ICommandFactory
 	{
-		public override bool CanDebugCommand (ExecutionCommand cmd)
+		public ProcessExecutionCommand CreateCommand (string path)
 		{
-			return cmd is PowerShellExecutionCommand;
-		}
+			if (!PowerShellExecutionCommand.CanExecute (path))
+				return null;
 
-		public override DebuggerStartInfo CreateDebuggerStartInfo (ExecutionCommand cmd)
-		{
-			var powerShellCommand = (PowerShellExecutionCommand)cmd;
-			return new DebuggerStartInfo {
-				Command = powerShellCommand.ScriptFileName,
-				WorkingDirectory = powerShellCommand.WorkingDirectory
-			};
-		}
-
-		public override DebuggerSession CreateSession ()
-		{
-			return new PowerShellDebuggerSession ();
+			return new PowerShellExecutionCommand (path);
 		}
 	}
 }
