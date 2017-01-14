@@ -86,7 +86,7 @@ namespace MonoDevelop.PowerShell
 		{
 			return new StackFrame (
 				body.ThreadId ?? 1,
-				new SourceLocation (body.Source.Name, body.Source.Path, body.Line, 1, -1, -1),
+				new SourceLocation (body.Source.Name ?? string.Empty, body.Source.Path, body.Line, 1, -1, -1),
 				"PowerShell"
 			);
 		}
