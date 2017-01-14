@@ -298,6 +298,7 @@ namespace MonoDevelop.PowerShell
 			}
 
 			currentStoppedEventBody = body;
+			eventArgs.Backtrace = OnGetThreadBacktrace (1, 1);
 
 			OnTargetEvent (eventArgs);
 		}
@@ -362,6 +363,20 @@ namespace MonoDevelop.PowerShell
 				VariablesReference = variablesReference
 			};
 			return debugClient.SendRequest (SetVariableRequest.Type, message);
+		}
+
+		public override async void Dispose ()
+		{
+			try {
+				var client = debugClient;
+				debugClient = null;
+				if (client != null) {
+					await client.Stop ();
+				}
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("PowerShellDebuggerSession.Dispose error", ex);
+			}
+			base.Dispose ();
 		}
 	}
 }
