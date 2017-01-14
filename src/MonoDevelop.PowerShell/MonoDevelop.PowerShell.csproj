@@ -54,7 +54,6 @@
     <Compile Include="MonoDevelop.PowerShell\TextChangeEventArgsExtensions.cs" />
     <Compile Include="MonoDevelop.PowerShell\TextEditorExtensions.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellCompletionData.cs" />
-    <Compile Include="MonoDevelop.PowerShell\PowerShellCommands.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellReferencesFinder.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellParameterHintingData.cs" />
     <Compile Include="MonoDevelop.PowerShell.Debugging\PowerShellDebuggerEngine.cs" />

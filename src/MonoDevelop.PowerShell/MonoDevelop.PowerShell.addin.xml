@@ -64,18 +64,6 @@
 			_label="PowerShell Editor Services" />
 	</Extension>
 
-	<Extension path="/MonoDevelop/Ide/Commands">
-		<Category id="PowerShell" _name="PowerShell">
-			<Command
-				id="MonoDevelop.PowerShell.PowerShellCommands.Stop"
-				icon="gtk-stop"
-				macShortcut="Shift|Meta|Return Shift|F5"
-				shortcut="Shift|F5"
-				_description="Stop current build or application execution"
-				_label="_Stop" />
-		</Category>
-	</Extension>
-
 	<Extension path="/MonoDevelop/SourceEditor2/ContextMenu/Editor">
 		<Condition id="FileType" fileExtensions=".ps1,.psm1,.psd1">
 			<CommandItem
