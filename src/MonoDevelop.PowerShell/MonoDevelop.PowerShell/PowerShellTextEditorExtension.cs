@@ -44,7 +44,7 @@ using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellTextEditorExtension : CompletionTextEditorExtension
+	class PowerShellTextEditorExtension : CompletionTextEditorExtension, IDebuggerExpressionResolver
 	{
 		PowerShellSession session;
 		List<IErrorMarker> errorMarkers = new List<IErrorMarker> ();
@@ -275,6 +275,28 @@ namespace MonoDevelop.PowerShell
 		{
 			var runOperation = IdeApp.ProjectOperations.ExecuteFile (Editor.FileName, Runtime.ProcessService.DefaultExecutionHandler);
 			IdeApp.ProjectOperations.CurrentRunOperation = runOperation;
+		}
+
+		public Task<DebugDataTipInfo> ResolveExpressionAsync (
+			IReadonlyTextDocument editor,
+			DocumentContext doc,
+			int offset,
+			CancellationToken cancellationToken)
+		{
+			DocumentLocation location = editor.OffsetToLocation (offset);
+			IDocumentLine line = editor.GetLine (location.Line);
+			string text = editor.GetLineText (line);
+
+			TextSegment wordSegment = TextEditorExtensions.GetWordRangeAtPosition (text, location.Column);
+			if (wordSegment.IsEmpty) {
+				return Task.FromResult (new DebugDataTipInfo ());
+			}
+
+			string expression = text.Substring (wordSegment.Offset, wordSegment.Length);
+			var span = new Microsoft.CodeAnalysis.Text.TextSpan (wordSegment.Offset, wordSegment.Length);
+			var tipInfo = new DebugDataTipInfo (span, expression);
+
+			return Task.FromResult (tipInfo);
 		}
 	}
 }

@@ -65,6 +65,8 @@
     <Compile Include="MonoDevelop.PowerShell.Debugging\ObjectValueFactory.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellCommandFactory.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellExecutionCommand.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellParser.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellParsedDocument.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

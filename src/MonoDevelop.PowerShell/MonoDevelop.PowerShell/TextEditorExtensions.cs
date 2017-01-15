@@ -38,7 +38,11 @@ namespace MonoDevelop.PowerShell
 		public static TextSegment GetWordRangeAtPosition (this TextEditor editor, int column, IDocumentLine line)
 		{
 			string text = editor.GetLineText (line);
+			return GetWordRangeAtPosition (text, column);
+		}
 
+		public static TextSegment GetWordRangeAtPosition (string text, int column)
+		{
 			string pattern = @"(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\=\+\[\{\]\}\\\|\;\'\""\,\.\<\>\/\?\s]+)";
 
 			MatchCollection matches = Regex.Matches (text, pattern, RegexOptions.Singleline);
