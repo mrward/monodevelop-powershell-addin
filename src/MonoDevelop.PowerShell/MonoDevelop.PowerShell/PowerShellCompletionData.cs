@@ -69,17 +69,35 @@ namespace MonoDevelop.PowerShell
 
 		string GetDescription ()
 		{
-			if (!string.IsNullOrEmpty (CompletionItem.Documentation)) {
-				if (!String.IsNullOrEmpty (CompletionItem.Detail)) {
-					return CompletionItem.Documentation +
-						Environment.NewLine +
-						Environment.NewLine +
-						CompletionItem.Detail;
-				}
-				return CompletionItem.Documentation;
+			if (UseDocumentationAndDetail ()) {
+				return CompletionItem.Documentation +
+					Environment.NewLine +
+					Environment.NewLine +
+					CompletionItem.Detail;
 			}
 
 			return CompletionItem.Detail ?? string.Empty;
+		}
+
+		/// <summary>
+		/// Documentation may not be installed on Windows and in this case the
+		/// information can duplicated be in the CompletionItem.Documentation and
+		/// the CompletionItem.Detail.
+		/// </summary>
+		bool UseDocumentationAndDetail ()
+		{
+			if (string.IsNullOrEmpty (CompletionItem.Documentation))
+				return false;
+
+			if (string.IsNullOrEmpty (CompletionItem.Detail))
+				return false;
+
+			if (!Platform.IsWindows)
+				return true;
+
+			// Trim the Documentation since \r\n is added to the start
+			// when the documentation is not installed locally on Windows.
+			return CompletionItem.Documentation.Trim () != CompletionItem.Detail;
 		}
 
 		static IconId GetIcon (CompletionItem item)
