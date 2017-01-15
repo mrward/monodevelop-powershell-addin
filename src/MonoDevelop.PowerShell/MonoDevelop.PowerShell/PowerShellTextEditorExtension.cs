@@ -136,7 +136,7 @@ namespace MonoDevelop.PowerShell
 					return null;
 
 				var completionList = new CompletionDataList ();
-				completionList.AddRange (items.Select (item => new PowerShellCompletionData (item)));
+				completionList.AddRange (items.Select (item => new PowerShellCompletionData (session, item)));
 
 				if (!wordSegment.IsEmpty) {
 					completionList.TriggerWordLength = wordSegment.Length;

@@ -24,6 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.CodeCompletion;
@@ -33,8 +36,11 @@ namespace MonoDevelop.PowerShell
 {
 	class PowerShellCompletionData : CompletionData
 	{
-		public PowerShellCompletionData (CompletionItem item)
+		PowerShellSession session;
+
+		public PowerShellCompletionData (PowerShellSession session, CompletionItem item)
 		{
+			this.session = session;
 			CompletionItem = item;
 			CompletionText = item.InsertText;
 
@@ -56,9 +62,18 @@ namespace MonoDevelop.PowerShell
 
 		public override string Description {
 			get {
-				return GLib.Markup.EscapeText (CompletionItem.Detail ?? string.Empty);
+				return GLib.Markup.EscapeText (GetDescription ());
 			}
 			set { base.Description = value; }
+		}
+
+		string GetDescription ()
+		{
+			if (!string.IsNullOrEmpty (CompletionItem.Documentation)) {
+				return CompletionItem.Documentation;
+			}
+
+			return CompletionItem.Detail ?? string.Empty;
 		}
 
 		static IconId GetIcon (CompletionItem item)
@@ -103,6 +118,21 @@ namespace MonoDevelop.PowerShell
 				default:
 				return null;
 			}
+		}
+
+		public override async Task<TooltipInformation> CreateTooltipInformation (bool smartWrap, CancellationToken cancelToken)
+		{
+			try {
+				if (CompletionItem.Kind == CompletionItemKind.Function) {
+					CompletionItem resolvedCompletionItem = await session.ResolveCompletionItem (CompletionItem);
+					if (resolvedCompletionItem != null) {
+						CompletionItem = resolvedCompletionItem;
+					}
+				}
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("PowerShellCompletionData.CreateTooltip error", ex);
+			}
+			return await base.CreateTooltipInformation (smartWrap, cancelToken);
 		}
 	}
 }

@@ -166,6 +166,14 @@ namespace MonoDevelop.PowerShell
 			};
 		}
 
+		public Task<CompletionItem> ResolveCompletionItem (CompletionItem completionItem)
+		{
+			if (languageServiceClient == null)
+				return Task.FromResult (completionItem);
+
+			return languageServiceClient.SendRequest (CompletionResolveRequest.Type, completionItem);
+		}
+
 		public Task<SignatureHelp> GetSignatureHelp (CodeCompletionContext completionContext)
 		{
 			if (languageServiceClient == null)
