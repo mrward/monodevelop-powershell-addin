@@ -70,6 +70,12 @@ namespace MonoDevelop.PowerShell
 		string GetDescription ()
 		{
 			if (!string.IsNullOrEmpty (CompletionItem.Documentation)) {
+				if (!String.IsNullOrEmpty (CompletionItem.Detail)) {
+					return CompletionItem.Documentation +
+						Environment.NewLine +
+						Environment.NewLine +
+						CompletionItem.Detail;
+				}
 				return CompletionItem.Documentation;
 			}
 
