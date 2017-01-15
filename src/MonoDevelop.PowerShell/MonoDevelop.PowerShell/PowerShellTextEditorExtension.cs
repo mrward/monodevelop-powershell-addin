@@ -293,6 +293,10 @@ namespace MonoDevelop.PowerShell
 			}
 
 			string expression = text.Substring (wordSegment.Offset, wordSegment.Length);
+			if (!expression.StartsWith ("$")) {
+				return Task.FromResult (new DebugDataTipInfo ());
+			}
+
 			var span = new Microsoft.CodeAnalysis.Text.TextSpan (wordSegment.Offset, wordSegment.Length);
 			var tipInfo = new DebugDataTipInfo (span, expression);
 
