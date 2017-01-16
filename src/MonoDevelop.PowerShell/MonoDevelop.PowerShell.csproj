@@ -67,6 +67,7 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellExecutionCommand.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellParser.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellParsedDocument.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellTooltipProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

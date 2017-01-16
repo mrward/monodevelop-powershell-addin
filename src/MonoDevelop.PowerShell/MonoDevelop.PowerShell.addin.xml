@@ -95,4 +95,12 @@
 	<Extension path="/MonoDevelop/TypeSystem/Parser">
 		<Parser class="MonoDevelop.PowerShell.PowerShellParser" mimeType="application/powershell" />
 	</Extension>
+
+	<Extension path="/MonoDevelop/SourceEditor2/TooltipProviders">
+		<Class
+			id="PowerShell"
+			insertafter="Debug"
+			mimetype="application/powershell"
+			class="MonoDevelop.PowerShell.PowerShellTooltipProvider" />
+	</Extension>
 </ExtensionModel>

@@ -36,5 +36,9 @@
       <Private>False</Private>
       <HintPath>$(MDBinDir)\..\AddIns\MonoDevelop.Debugger\MonoDevelop.Debugger.dll</HintPath>
     </Reference>
+    <Reference Include="Xwt">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Xwt.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

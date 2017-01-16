@@ -157,10 +157,26 @@ namespace MonoDevelop.PowerShell
 
 		TextDocumentPosition CreateTextDocumentPosition (CodeCompletionContext completionContext)
 		{
+			return CreateTextDocumentPosition (
+				completionContext.TriggerLineOffset,
+				completionContext.TriggerLine - 1
+			);
+		}
+
+		TextDocumentPosition CreateTextDocumentPosition (DocumentLocation location)
+		{
+			return CreateTextDocumentPosition (
+				location.Column - 1,
+				location.Line - 1
+			);
+		}
+
+		TextDocumentPosition CreateTextDocumentPosition (int column, int line)
+		{
 			return new TextDocumentPosition {
 				Position = new Position {
-					Character = completionContext.TriggerLineOffset,
-					Line = completionContext.TriggerLine - 1
+					Character = column,
+					Line = line
 				},
 				Uri = FileName
 			};
@@ -205,6 +221,15 @@ namespace MonoDevelop.PowerShell
 				return;
 
 			languageServiceClient.SendRequest (ShowOnlineHelpRequest.Type, text);
+		}
+
+		public Task<Hover> Hover (DocumentLocation location)
+		{
+			if (languageServiceClient == null)
+				return Task.FromResult (new Hover ());
+
+			var position = CreateTextDocumentPosition (location);
+			return languageServiceClient.SendRequest (HoverRequest.Type, position);
 		}
 	}
 }
