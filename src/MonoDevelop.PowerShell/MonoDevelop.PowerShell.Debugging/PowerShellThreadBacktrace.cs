@@ -133,7 +133,8 @@ namespace MonoDevelop.PowerShell
 		public ObjectValue[] GetExpressionValues (int frameIndex, string[] expressions, EvaluationOptions options)
 		{
 			StackFrame frame = frames[frameIndex];
-			return expressions.Select (expression => GetExpressionValue (frame.Address, expression)).ToArray ();
+			return expressions.Select (expression => GetExpressionValue (frame.Address, expression, options))
+				.ToArray ();
 		}
 
 		public ObjectValue[] GetLocalVariables (int frameIndex, EvaluationOptions options)
@@ -161,13 +162,17 @@ namespace MonoDevelop.PowerShell
 			return new ValidationResult (true, null);
 		}
 
-		ObjectValue GetExpressionValue (long frameAddress, string expression)
+		ObjectValue GetExpressionValue (long frameAddress, string expression, EvaluationOptions options)
 		{
 			var updater = new PowerShellVariableValueUpdater (debugSession);
 			var path = new ObjectPath (expression);
 			var value = ObjectValue.CreateEvaluating (updater, path, ObjectValueFlags.Object);
 
-			updater.GetExpressionValue (path, frameAddress, expression);
+			// Run task since this method is called on the UI thread and will block
+			// for the full EvaluationTimeout if the updater's task is used.
+			Task.Run (async () => {
+				await updater.GetExpressionValue (path, frameAddress, expression);
+			}).Wait (options.EvaluationTimeout);
 
 			return value;
 		}
