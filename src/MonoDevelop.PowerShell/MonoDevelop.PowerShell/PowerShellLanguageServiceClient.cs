@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.Client;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
-using MonoDevelop.Ide.Gui;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.PowerShell
 {
@@ -44,7 +44,7 @@ namespace MonoDevelop.PowerShell
 			this.session = session;
 		}
 
-		public Task OpenDocument (Document document)
+		public Task OpenDocument (DocumentToOpen document)
 		{
 			DidOpenTextDocumentNotification message = CreateOpenTextDocumentNotification (document);
 			return OpenDocument (message);
@@ -64,12 +64,29 @@ namespace MonoDevelop.PowerShell
 			return SendEvent (DidOpenTextDocumentNotification.Type, message);
 		}
 
-		DidOpenTextDocumentNotification CreateOpenTextDocumentNotification (Document document)
+		DidOpenTextDocumentNotification CreateOpenTextDocumentNotification (DocumentToOpen document)
 		{
 			return new DidOpenTextDocumentNotification () {
 				Uri = document.FileName,
-				Text = document.Editor.Text
+				Text = document.Text
 			};
+		}
+
+		public Task CloseDocument (FilePath fileName)
+		{
+			if (!connected) {
+				lock (session) {
+					if (!connected) {
+						openTextDocumentNotification = null;
+					}
+				}
+				return Task.FromResult (true);
+			}
+
+			var message = new TextDocumentIdentifier {
+				Uri = fileName
+			};
+			return SendEvent (DidCloseTextDocumentNotification.Type, message);
 		}
 
 		protected override Task Initialize ()

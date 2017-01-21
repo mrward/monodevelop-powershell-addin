@@ -41,7 +41,7 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellProcess process;
 		PowerShellLanguageServiceClient languageServiceClient;
-		Document documentOpened;
+		DocumentToOpen documentOpened;
 
 		public PowerShellSession (FilePath fileName)
 		{
@@ -103,25 +103,44 @@ namespace MonoDevelop.PowerShell
 			Runtime.AssertMainThread ();
 
 			if (languageServiceClient == null) {
-				documentOpened = document;
+				documentOpened = new DocumentToOpen (document);
 			} else {
 				documentOpened = null;
-				SendOpenDocumentMessage (document);
+				SendOpenDocumentMessage (new DocumentToOpen (document));
 			}
 		}
 
-		void SendOpenDocumentMessage (Document document)
+		void SendOpenDocumentMessage (DocumentToOpen document)
 		{
 			languageServiceClient.OpenDocument (document);
+		}
+
+		void SendCloseDocumentMessage (FilePath fileName)
+		{
+			languageServiceClient.CloseDocument (fileName);
 		}
 
 		Task OpenDocumentIfNotOpened ()
 		{
 			return Runtime.RunInMainThread (() => {
-				Document existingDocument = documentOpened;
+				DocumentToOpen existingDocument = documentOpened;
 				documentOpened = null;
 				SendOpenDocumentMessage (existingDocument);
 			});
+		}
+
+		public void FileNameChanged (FilePath newFileName, string text)
+		{
+			Runtime.AssertMainThread ();
+
+			if (languageServiceClient == null) {
+				documentOpened = new DocumentToOpen (newFileName, text);
+			} else {
+				documentOpened = null;
+				SendCloseDocumentMessage (FileName);
+				FileName = newFileName;
+				SendOpenDocumentMessage (new DocumentToOpen (newFileName, text));
+			}
 		}
 
 		public event EventHandler<DiagnosticsEventArgs> OnDiagnostics;

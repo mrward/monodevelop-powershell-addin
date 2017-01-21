@@ -39,6 +39,7 @@ using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
+using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Refactoring;
 
@@ -56,6 +57,7 @@ namespace MonoDevelop.PowerShell
 			session.OnDiagnostics += OnDiagnostics;
 
 			Editor.TextChanging += TextChanging;
+			Editor.FileNameChanged += FileNameChanged;
 
 			base.Initialize ();
 		}
@@ -73,6 +75,7 @@ namespace MonoDevelop.PowerShell
 			}
 			if (Editor != null) {
 				Editor.TextChanged -= TextChanging;
+				Editor.FileNameChanged -= FileNameChanged;
 			}
 			base.Dispose ();
 		}
@@ -114,6 +117,18 @@ namespace MonoDevelop.PowerShell
 				session.TextChanged (e, Editor);
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("TextChanged error.", ex);
+			}
+		}
+
+		void FileNameChanged (object sender, EventArgs e)
+		{
+			try {
+				if (Editor.FileName == session.FileName)
+					return;
+
+				session.FileNameChanged (Editor.FileName, Editor.Text);
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("FileNameChanged error.", ex);
 			}
 		}
 
