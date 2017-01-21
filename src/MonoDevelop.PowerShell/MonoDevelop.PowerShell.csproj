@@ -74,6 +74,9 @@
     <EmbeddedResource Include="MonoDevelop.PowerShell\SyntaxHighlighting\PowerShellSyntaxMode.xml">
       <LogicalName>PowerShellSyntaxMode.xml</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Templates\EmptyPowerShellFile.xft.xml">
+      <LogicalName>EmptyPowerShellFile.xft.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\external\PowerShellEditorServices\src\PowerShellEditorServices.Client.csproj">

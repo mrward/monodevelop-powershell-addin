@@ -103,4 +103,8 @@
 			mimetype="application/powershell"
 			class="MonoDevelop.PowerShell.PowerShellTooltipProvider" />
 	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/FileTemplates">
+		<FileTemplate id="EmptyPowerShellFile" resource="EmptyPowerShellFile.xft.xml" />
+	</Extension>
 </ExtensionModel>

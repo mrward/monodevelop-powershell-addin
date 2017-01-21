@@ -1,0 +1,26 @@
+﻿<Template
+	Originator="Matt Ward"
+	Language="PowerShell"
+	Created="21/01/2017"
+	LastModified="21/01/2017">
+
+	<TemplateConfiguration>
+		<_Name>Empty PowerShell Script</_Name>
+		<_Category>PowerShell</_Category>
+		<Icon>md-text-file-icon</Icon>
+		<_Description>Creates an empty PowerShell script.</_Description>
+		<DefaultFilename>EmptyPowerShell</DefaultFilename>
+	</TemplateConfiguration>
+
+	<TemplateFiles>
+		<File DefaultExtension=".ps1">
+<![CDATA[
+
+
+
+]]>
+		</File>
+	</TemplateFiles>
+
+	<FileOptions />
+</Template>
