@@ -48,11 +48,11 @@ namespace MonoDevelop.PowerShell
 			this.session = session;
 		}
 
-		public async Task FindReferences (DocumentLocation location)
+		public async Task FindReferences (FilePath fileName, DocumentLocation location)
 		{
 			try {
 				using (var monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor (true, true)) {
-					Location[] locations = await session.GetReferences (location.CreatePosition ());
+					Location[] locations = await session.GetReferences (fileName, location.CreatePosition ());
 
 					List<SearchResult> references = locations.Select (CreateSearchResult).ToList ();
 					monitor.ReportResults (references);
@@ -70,10 +70,10 @@ namespace MonoDevelop.PowerShell
 			return new SearchResult (provider, startOffset, endOffset - startOffset);
 		}
 
-		public async Task RenameOccurrences (DocumentLocation location)
+		public async Task RenameOccurrences (FilePath fileName, DocumentLocation location)
 		{
 			try {
-				Location[] locations = await session.GetReferences (location.CreatePosition ());
+				Location[] locations = await session.GetReferences (fileName, location.CreatePosition ());
 				List<SearchResult> references = locations.Select (CreateSearchResult).ToList ();
 				StartTextEditorRename (references);
 			} catch (Exception ex) {

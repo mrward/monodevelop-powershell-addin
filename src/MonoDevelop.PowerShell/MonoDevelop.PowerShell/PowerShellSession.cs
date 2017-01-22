@@ -129,7 +129,7 @@ namespace MonoDevelop.PowerShell
 			});
 		}
 
-		public void FileNameChanged (FilePath newFileName, string text)
+		public void FileNameChanged (FilePath oldFileName, FilePath newFileName, string text)
 		{
 			Runtime.AssertMainThread ();
 
@@ -137,7 +137,7 @@ namespace MonoDevelop.PowerShell
 				documentOpened = new DocumentToOpen (newFileName, text);
 			} else {
 				documentOpened = null;
-				SendCloseDocumentMessage (FileName);
+				SendCloseDocumentMessage (oldFileName);
 				FileName = newFileName;
 				SendOpenDocumentMessage (new DocumentToOpen (newFileName, text));
 			}
@@ -151,7 +151,7 @@ namespace MonoDevelop.PowerShell
 			return Task.FromResult (true);
 		}
 
-		public void TextChanged (TextChangeEventArgs e, TextEditor editor)
+		public void TextChanged (FilePath fileName, TextChangeEventArgs e, TextEditor editor)
 		{
 			Runtime.AssertMainThread ();
 
@@ -159,45 +159,47 @@ namespace MonoDevelop.PowerShell
 				return;
 
 			var message = new DidChangeTextDocumentParams {
-				Uri = FileName,
+				Uri = fileName,
 				ContentChanges = new [] { e.CreateTextDocumentChangeEvent (editor) }
 			};
 			languageServiceClient.SendEvent (DidChangeTextDocumentNotification.Type, message);
 		}
 
-		public Task<CompletionItem[]> GetCompletionItems (CodeCompletionContext completionContext)
+		public Task<CompletionItem[]> GetCompletionItems (FilePath fileName, CodeCompletionContext completionContext)
 		{
 			if (languageServiceClient == null)
 				return Task.FromResult (new CompletionItem[0]);
 
-			var position = CreateTextDocumentPosition (completionContext);
+			var position = CreateTextDocumentPosition (fileName, completionContext);
 			return languageServiceClient.SendRequest (CompletionRequest.Type, position);
 		}
 
-		TextDocumentPosition CreateTextDocumentPosition (CodeCompletionContext completionContext)
+		static TextDocumentPosition CreateTextDocumentPosition (FilePath fileName, CodeCompletionContext completionContext)
 		{
 			return CreateTextDocumentPosition (
+				fileName,
 				completionContext.TriggerLineOffset,
 				completionContext.TriggerLine - 1
 			);
 		}
 
-		TextDocumentPosition CreateTextDocumentPosition (DocumentLocation location)
+		static TextDocumentPosition CreateTextDocumentPosition (FilePath fileName, DocumentLocation location)
 		{
 			return CreateTextDocumentPosition (
+				fileName,
 				location.Column - 1,
 				location.Line - 1
 			);
 		}
 
-		TextDocumentPosition CreateTextDocumentPosition (int column, int line)
+		static TextDocumentPosition CreateTextDocumentPosition (FilePath fileName, int column, int line)
 		{
 			return new TextDocumentPosition {
 				Position = new Position {
 					Character = column,
 					Line = line
 				},
-				Uri = FileName
+				Uri = fileName
 			};
 		}
 
@@ -209,16 +211,16 @@ namespace MonoDevelop.PowerShell
 			return languageServiceClient.SendRequest (CompletionResolveRequest.Type, completionItem);
 		}
 
-		public Task<SignatureHelp> GetSignatureHelp (CodeCompletionContext completionContext)
+		public Task<SignatureHelp> GetSignatureHelp (FilePath fileName, CodeCompletionContext completionContext)
 		{
 			if (languageServiceClient == null)
 				return Task.FromResult (new SignatureHelp ());
 
-			var position = CreateTextDocumentPosition (completionContext);
+			var position = CreateTextDocumentPosition (fileName, completionContext);
 			return languageServiceClient.SendRequest (SignatureHelpRequest.Type, position);
 		}
 
-		public Task<Location[]> GetReferences (Position position)
+		public Task<Location[]> GetReferences (FilePath fileName, Position position)
 		{
 			if (languageServiceClient == null)
 				return Task.FromResult (new Location[0]);
@@ -227,7 +229,7 @@ namespace MonoDevelop.PowerShell
 				Context = new ReferencesContext {
 					IncludeDeclaration = true
 				},
-				Uri = FileName,
+				Uri = fileName,
 				Position = position
 			};
 
@@ -242,12 +244,12 @@ namespace MonoDevelop.PowerShell
 			languageServiceClient.SendRequest (ShowOnlineHelpRequest.Type, text);
 		}
 
-		public Task<Hover> Hover (DocumentLocation location)
+		public Task<Hover> Hover (FilePath fileName, DocumentLocation location)
 		{
 			if (languageServiceClient == null)
 				return Task.FromResult (new Hover ());
 
-			var position = CreateTextDocumentPosition (location);
+			var position = CreateTextDocumentPosition (fileName, location);
 			return languageServiceClient.SendRequest (HoverRequest.Type, position);
 		}
 	}

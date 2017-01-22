@@ -49,7 +49,7 @@ namespace MonoDevelop.PowerShell
 				PowerShellSession session = PowerShellServices.Workspace.GetSession (ctx.Name);
 
 				DocumentLocation location = editor.OffsetToLocation (offset);
-				Hover result = await session.Hover (location);
+				Hover result = await session.Hover (ctx.Name, location);
 				return CreateTooltipItem (editor, result);
 
 			} catch (Exception ex) {

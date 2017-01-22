@@ -48,12 +48,14 @@ namespace MonoDevelop.PowerShell
 	class PowerShellTextEditorExtension : CompletionTextEditorExtension, IDebuggerExpressionResolver
 	{
 		PowerShellSession session;
+		FilePath fileName;
 		List<IErrorMarker> errorMarkers = new List<IErrorMarker> ();
 
 		protected override void Initialize ()
 		{
 			PowerShellServices.Activate ();
-			session = PowerShellServices.Workspace.GetSession (DocumentContext.Name);
+			fileName = DocumentContext.Name;
+			session = PowerShellServices.Workspace.GetSession (fileName);
 			session.OnDiagnostics += OnDiagnostics;
 
 			Editor.TextChanging += TextChanging;
@@ -86,7 +88,7 @@ namespace MonoDevelop.PowerShell
 
 		void OnDiagnostics (object sender, DiagnosticsEventArgs e)
 		{
-			if (e.FileName == null || !(Editor.FileName == e.FileName))
+			if (e.FileName == null || !(fileName == e.FileName))
 				return;
 
 			Runtime.RunInMainThread (() => {
@@ -114,7 +116,7 @@ namespace MonoDevelop.PowerShell
 		void TextChanging (object sender, TextChangeEventArgs e)
 		{
 			try {
-				session.TextChanged (e, Editor);
+				session.TextChanged (fileName, e, Editor);
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("TextChanged error.", ex);
 			}
@@ -123,10 +125,11 @@ namespace MonoDevelop.PowerShell
 		void FileNameChanged (object sender, EventArgs e)
 		{
 			try {
-				if (Editor.FileName == session.FileName)
+				if (Editor.FileName == fileName)
 					return;
 
-				session.FileNameChanged (Editor.FileName, Editor.Text);
+				session.FileNameChanged (fileName, Editor.FileName, Editor.Text);
+				fileName = Editor.FileName;
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("FileNameChanged error.", ex);
 			}
@@ -146,7 +149,7 @@ namespace MonoDevelop.PowerShell
 			try {
 				TextSegment wordSegment = Editor.GetWordRangeAtPosition (completionContext.TriggerLineOffset, Editor.GetLine (completionContext.TriggerLine));
 
-				CompletionItem[] items = await session.GetCompletionItems (completionContext);
+				CompletionItem[] items = await session.GetCompletionItems (fileName, completionContext);
 				if (items == null || !items.Any ())
 					return null;
 
@@ -180,7 +183,7 @@ namespace MonoDevelop.PowerShell
 		void FindReferences ()
 		{
 			var finder = new PowerShellReferencesFinder (Editor, session);
-			finder.FindReferences (Editor.CaretLocation);
+			finder.FindReferences (fileName, Editor.CaretLocation);
 		}
 
 		[CommandUpdateHandler (EditCommands.Rename)]
@@ -193,7 +196,7 @@ namespace MonoDevelop.PowerShell
 		void Rename ()
 		{
 			var renamer = new PowerShellReferencesFinder (Editor, session);
-			renamer.RenameOccurrences (Editor.CaretLocation);
+			renamer.RenameOccurrences (fileName, Editor.CaretLocation);
 		}
 
 		public override Task<ParameterHintingResult> HandleParameterCompletionAsync (
@@ -215,7 +218,7 @@ namespace MonoDevelop.PowerShell
 			CodeCompletionContext completionContext,
 			CancellationToken token)
 		{
-			SignatureHelp signatureHelp = await session.GetSignatureHelp (completionContext);
+			SignatureHelp signatureHelp = await session.GetSignatureHelp (fileName, completionContext);
 			if (signatureHelp == null || !signatureHelp.Signatures.Any ()) {
 				return ParameterHintingResult.Empty;
 			}
@@ -282,13 +285,13 @@ namespace MonoDevelop.PowerShell
 				info.Enabled = false;
 			}
 
-			info.Enabled =  IdeApp.ProjectOperations.CanExecuteFile (Editor.FileName, Runtime.ProcessService.DefaultExecutionHandler);
+			info.Enabled =  IdeApp.ProjectOperations.CanExecuteFile (fileName, Runtime.ProcessService.DefaultExecutionHandler);
 		}
 
 		[CommandHandler (ProjectCommands.Run)]
 		void OnRun ()
 		{
-			var runOperation = IdeApp.ProjectOperations.ExecuteFile (Editor.FileName, Runtime.ProcessService.DefaultExecutionHandler);
+			var runOperation = IdeApp.ProjectOperations.ExecuteFile (fileName, Runtime.ProcessService.DefaultExecutionHandler);
 			IdeApp.ProjectOperations.CurrentRunOperation = runOperation;
 		}
 
