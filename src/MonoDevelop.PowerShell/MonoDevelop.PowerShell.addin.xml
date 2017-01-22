@@ -84,6 +84,7 @@
 		<DebuggerEngine
 			id="MonoDevelop.PowerShell"
 			name="PowerShell Debugger"
+			insertbefore="Mono.Debugger.Gdb"
 			features="Breakpoints, Pause, Stepping, DebugFile"
 			type="MonoDevelop.PowerShell.PowerShellDebuggerEngine" />
 	</Extension>
