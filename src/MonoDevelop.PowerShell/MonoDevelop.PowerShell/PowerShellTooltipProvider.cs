@@ -46,7 +46,7 @@ namespace MonoDevelop.PowerShell
 			CancellationToken token = default (CancellationToken))
 		{
 			try {
-				PowerShellSession session = PowerShellServices.Workspace.GetSession (ctx.Name);
+				PowerShellSession session = PowerShellServices.Workspace.GetSession ();
 
 				DocumentLocation location = editor.OffsetToLocation (offset);
 				Hover result = await session.Hover (ctx.Name, location);

@@ -41,14 +41,7 @@ namespace MonoDevelop.PowerShell
 	{
 		PowerShellProcess process;
 		PowerShellLanguageServiceClient languageServiceClient;
-		DocumentToOpen documentOpened;
-
-		public PowerShellSession (FilePath fileName)
-		{
-			this.FileName = fileName;
-		}
-
-		public FilePath FileName { get; private set; }
+		bool ready;
 
 		public int DebugServicePort {
 			get {
@@ -57,6 +50,13 @@ namespace MonoDevelop.PowerShell
 				}
 				return -1;
 			}
+		}
+
+		public event EventHandler Started;
+
+		void OnStarted ()
+		{
+			Started?.Invoke (this, new EventArgs ());
 		}
 
 		public void Start ()
@@ -84,7 +84,10 @@ namespace MonoDevelop.PowerShell
 		{
 			try {
 				StartLanguageServiceClient (process.SessionDetails).Wait ();
-				OpenDocumentIfNotOpened ().Wait ();
+				Runtime.RunInMainThread (() => {
+					ready = true;
+					OnStarted ();
+				}).Wait ();
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("Failed to start language service client.", ex);
 				PowerShellServices.ErrorReporter.ReportError ("Could not start PowerShell language service.");
@@ -102,10 +105,7 @@ namespace MonoDevelop.PowerShell
 		{
 			Runtime.AssertMainThread ();
 
-			if (languageServiceClient == null) {
-				documentOpened = new DocumentToOpen (document);
-			} else {
-				documentOpened = null;
+			if (ready) {
 				SendOpenDocumentMessage (new DocumentToOpen (document));
 			}
 		}
@@ -115,30 +115,26 @@ namespace MonoDevelop.PowerShell
 			languageServiceClient.OpenDocument (document);
 		}
 
+		public void CloseDocument (Document document)
+		{
+			Runtime.AssertMainThread ();
+
+			if (ready) {
+				SendCloseDocumentMessage (document.FileName);
+			}
+		}
+
 		void SendCloseDocumentMessage (FilePath fileName)
 		{
 			languageServiceClient.CloseDocument (fileName);
-		}
-
-		Task OpenDocumentIfNotOpened ()
-		{
-			return Runtime.RunInMainThread (() => {
-				DocumentToOpen existingDocument = documentOpened;
-				documentOpened = null;
-				SendOpenDocumentMessage (existingDocument);
-			});
 		}
 
 		public void FileNameChanged (FilePath oldFileName, FilePath newFileName, string text)
 		{
 			Runtime.AssertMainThread ();
 
-			if (languageServiceClient == null) {
-				documentOpened = new DocumentToOpen (newFileName, text);
-			} else {
-				documentOpened = null;
+			if (ready) {
 				SendCloseDocumentMessage (oldFileName);
-				FileName = newFileName;
 				SendOpenDocumentMessage (new DocumentToOpen (newFileName, text));
 			}
 		}
@@ -155,7 +151,7 @@ namespace MonoDevelop.PowerShell
 		{
 			Runtime.AssertMainThread ();
 
-			if (languageServiceClient == null)
+			if (!ready)
 				return;
 
 			var message = new DidChangeTextDocumentParams {
@@ -167,7 +163,7 @@ namespace MonoDevelop.PowerShell
 
 		public Task<CompletionItem[]> GetCompletionItems (FilePath fileName, CodeCompletionContext completionContext)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return Task.FromResult (new CompletionItem[0]);
 
 			var position = CreateTextDocumentPosition (fileName, completionContext);
@@ -205,7 +201,7 @@ namespace MonoDevelop.PowerShell
 
 		public Task<CompletionItem> ResolveCompletionItem (CompletionItem completionItem)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return Task.FromResult (completionItem);
 
 			return languageServiceClient.SendRequest (CompletionResolveRequest.Type, completionItem);
@@ -213,7 +209,7 @@ namespace MonoDevelop.PowerShell
 
 		public Task<SignatureHelp> GetSignatureHelp (FilePath fileName, CodeCompletionContext completionContext)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return Task.FromResult (new SignatureHelp ());
 
 			var position = CreateTextDocumentPosition (fileName, completionContext);
@@ -222,7 +218,7 @@ namespace MonoDevelop.PowerShell
 
 		public Task<Location[]> GetReferences (FilePath fileName, Position position)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return Task.FromResult (new Location[0]);
 
 			var message = new ReferencesParams {
@@ -238,7 +234,7 @@ namespace MonoDevelop.PowerShell
 
 		public void ShowOnlineHelp (string text)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return;
 
 			languageServiceClient.SendRequest (ShowOnlineHelpRequest.Type, text);
@@ -246,7 +242,7 @@ namespace MonoDevelop.PowerShell
 
 		public Task<Hover> Hover (FilePath fileName, DocumentLocation location)
 		{
-			if (languageServiceClient == null)
+			if (!ready)
 				return Task.FromResult (new Hover ());
 
 			var position = CreateTextDocumentPosition (fileName, location);

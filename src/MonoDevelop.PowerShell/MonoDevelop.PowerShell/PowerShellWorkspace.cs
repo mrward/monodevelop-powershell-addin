@@ -36,7 +36,7 @@ namespace MonoDevelop.PowerShell
 {
 	class PowerShellWorkspace
 	{
-		List<PowerShellSession> sessions = new List<PowerShellSession> ();
+		PowerShellSession session;
 
 		public void Initialize ()
 		{
@@ -67,62 +67,64 @@ namespace MonoDevelop.PowerShell
 		void WorkbenchDocumentOpened (object sender, DocumentEventArgs e)
 		{
 			if (IsSupported (e.Document))
-				WorkbenchDocumentOpened (e.Document);
+				PowerShellDocumentOpened (e.Document);
 		}
 
 		void WorkbenchDocumentClosed (object sender, DocumentEventArgs e)
 		{
 			if (IsSupported (e.Document))
-				WorkbenchDocumentClosed (e.Document);
+				PowerShellDocumentClosed (e.Document);
 		}
 
-		void WorkbenchDocumentOpened (Document document)
+		void PowerShellDocumentOpened (Document document)
 		{
 			try {
-				PowerShellSession session = GetSession (document);
-				session.OpenDocument (document);
+				PowerShellSession currentSession = GetSession ();
+				currentSession.OpenDocument (document);
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("Error opening PowerShell document.", ex);
 			}
 		}
 
-		void WorkbenchDocumentClosed (Document document)
+		void PowerShellDocumentClosed (Document document)
 		{
-			try {
-				PowerShellSession session = GetSession (document);
-				session.Stop ();
-				sessions.Remove (session);
-				if (sessions.Count == 0) {
-					PowerShellOutputPad.LogView.Clear ();
-				}
-			} catch (Exception ex) {
-				PowerShellLoggingService.LogError ("Error stopping PowerShell session.", ex);
-			}
-		}
-
-		PowerShellSession GetSession (Document document)
-		{
-			return GetSession (document.FileName);
-		}
-
-		public PowerShellSession GetSession (FilePath fileName)
-		{
-			PowerShellSession session = sessions.FirstOrDefault (currentSession => currentSession.FileName == fileName);
 			if (session != null) {
-				return session;
+				if (IsAnyPowerShellDocumentOpen ()) {
+					session.CloseDocument (document);
+				} else {
+					ShutdownSession ();
+				}
 			}
+		}
 
-			session = CreateSession (fileName);
-			sessions.Add (session);
+		public bool IsReady { get; private set; }
+
+		public PowerShellSession GetSession ()
+		{
+			Runtime.AssertMainThread ();
+
+			if (session == null)
+				session = CreateSession ();
 
 			return session;
 		}
 
-		PowerShellSession CreateSession (FilePath fileName)
+		bool IsAnyPowerShellDocumentOpen ()
 		{
-			var session = new PowerShellSession (fileName);
+			return GetOpenPowerShellDocuments ().Any ();
+		}
+
+		IEnumerable<Document> GetOpenPowerShellDocuments ()
+		{
+			return IdeApp.Workbench.Documents.Where (document => IsSupported (document.FileName));
+		}
+
+		PowerShellSession CreateSession ()
+		{
+			session = new PowerShellSession ();
 
 			if (PowerShellPathLocator.Exists) {
+				session.Started += SessionStarted;
 				session.Start ();
 			} else {
 				PowerShellLoggingService.LogError ("PowerShell is not installed. Please download and install PowerShell from https://github.com/PowerShell/PowerShell");
@@ -133,8 +135,43 @@ namespace MonoDevelop.PowerShell
 
 		void SolutionUnloaded (object sender, SolutionEventArgs e)
 		{
-			PowerShellOutputPad.LogView.Clear ();
-			sessions.Clear ();
+			ShutdownSession ();
+		}
+
+		void ShutdownSession ()
+		{
+			try {
+				IsReady = false;
+				session.Started -= SessionStarted;
+				session.Stop ();
+				session = null;
+				PowerShellOutputPad.LogView.Clear ();
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("Error stopping PowerShell session.", ex);
+			}
+		}
+
+		void SessionStarted (object sender, EventArgs e)
+		{
+			if (Runtime.IsMainThread) {
+				AddOpenPowerShellDocumentsToSession ();
+			} else {
+				Runtime.RunInMainThread (() => {
+					AddOpenPowerShellDocumentsToSession ();
+				}).Wait ();
+			}
+		}
+
+		void AddOpenPowerShellDocumentsToSession ()
+		{
+			try {
+				IsReady = true;
+				foreach (Document document in GetOpenPowerShellDocuments ()) {
+					session.OpenDocument (document);
+				}
+			} catch (Exception ex) {
+				PowerShellLoggingService.LogError ("Error processing after session started.", ex);
+			}
 		}
 	}
 }

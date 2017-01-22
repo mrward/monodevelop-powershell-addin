@@ -55,7 +55,7 @@ namespace MonoDevelop.PowerShell
 		{
 			PowerShellServices.Activate ();
 			fileName = DocumentContext.Name;
-			session = PowerShellServices.Workspace.GetSession (fileName);
+			session = PowerShellServices.Workspace.GetSession ();
 			session.OnDiagnostics += OnDiagnostics;
 
 			Editor.TextChanging += TextChanging;
@@ -257,7 +257,8 @@ namespace MonoDevelop.PowerShell
 				return;
 			}
 
-			info.Enabled = !DebuggingService.IsDebugging;
+			info.Enabled = !DebuggingService.IsDebugging &&
+				PowerShellServices.Workspace.IsReady;
 		}
 
 		[CommandHandler (DebugCommands.Debug)]
@@ -281,11 +282,12 @@ namespace MonoDevelop.PowerShell
 		[CommandUpdateHandler (ProjectCommands.Run)]
 		void OnUpdateRun (CommandInfo info)
 		{
-			if (!IdeApp.ProjectOperations.CurrentRunOperation.IsCompleted) {
+			if (!IdeApp.ProjectOperations.CurrentRunOperation.IsCompleted ||
+				!PowerShellServices.Workspace.IsReady) {
 				info.Enabled = false;
 			}
 
-			info.Enabled =  IdeApp.ProjectOperations.CanExecuteFile (fileName, Runtime.ProcessService.DefaultExecutionHandler);
+			info.Enabled = IdeApp.ProjectOperations.CanExecuteFile (fileName, Runtime.ProcessService.DefaultExecutionHandler);
 		}
 
 		[CommandHandler (ProjectCommands.Run)]
@@ -311,7 +313,7 @@ namespace MonoDevelop.PowerShell
 			}
 
 			string expression = text.Substring (wordSegment.Offset, wordSegment.Length);
-			if (!expression.StartsWith ("$")) {
+			if (!expression.StartsWith ("$", StringComparison.OrdinalIgnoreCase)) {
 				return Task.FromResult (new DebugDataTipInfo ());
 			}
 

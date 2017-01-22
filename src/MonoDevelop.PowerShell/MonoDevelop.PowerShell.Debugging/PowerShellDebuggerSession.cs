@@ -207,7 +207,7 @@ namespace MonoDevelop.PowerShell
 
 			try {
 				session = await Runtime.RunInMainThread (() => {
-					return PowerShellServices.Workspace.GetSession (startInfo.Command);
+					return PowerShellServices.Workspace.GetSession ();
 				});
 
 				var channel = new TcpSocketClientChannel (session.DebugServicePort);
