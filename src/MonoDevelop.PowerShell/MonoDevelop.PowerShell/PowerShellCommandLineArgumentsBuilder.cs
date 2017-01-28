@@ -67,7 +67,7 @@ namespace MonoDevelop.PowerShell
 
 		public string BundlesModulesPath { get; set; }
 		public string PowerShellScriptPath { get; set; }
-		public string RequiredEditorServicesVersion { get; set; } = "0.8.0";
+		public string RequiredEditorServicesVersion { get; set; } = "0.9.0";
 		public string HostName { get; set; } = "MonoDevelopHost";
 		public string HostProfileId { get; set; } = "MonoDevelop";
 		public string HostVersion { get; set; } = "0.1";
