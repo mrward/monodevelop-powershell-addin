@@ -37,8 +37,10 @@ namespace MonoDevelop.PowerShell
 		public PowerShellExecutionCommand (string scriptFileName)
 		{
 			Arguments = GetArguments (scriptFileName);
+			PowerShellArguments = Arguments;
 			Command = PowerShellPathLocator.PowerShellPath;
 			ScriptFileName = scriptFileName;
+			WorkingDirectory = Path.GetDirectoryName (scriptFileName);
 		}
 
 		string GetArguments (string scriptFileName)
@@ -55,6 +57,21 @@ namespace MonoDevelop.PowerShell
 		}
 
 		public string ScriptFileName { get; private set; }
+		public string PowerShellArguments { get; private set; }
+
+		/// <summary>
+		/// If the PowerShellArguments have been overridden in the Arguments
+		/// then use these arguments when debugging the PowerShell script. These
+		/// will be passed to the script as parameters.
+		/// </summary>
+		public string DebuggerArguments {
+			get {
+				if (Arguments != PowerShellArguments)
+					return Arguments;
+
+				return null;
+			}
+		}
 
 		public static bool CanExecute (string path)
 		{

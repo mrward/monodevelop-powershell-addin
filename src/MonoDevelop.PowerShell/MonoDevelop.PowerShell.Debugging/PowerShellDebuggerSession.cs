@@ -218,7 +218,7 @@ namespace MonoDevelop.PowerShell
 				OnStarted ();
 
 				await UpdateBreakpoints ();
-				await debugClient.LaunchScript (startInfo.Command);
+				await debugClient.LaunchScript (startInfo);
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("PowerShellDebuggerSession.OnRun error.", ex);
 			}

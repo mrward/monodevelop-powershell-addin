@@ -30,6 +30,7 @@ using Microsoft.PowerShell.EditorServices.Protocol.Client;
 using Microsoft.PowerShell.EditorServices.Protocol.DebugAdapter;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
+using Mono.Debugging.Client;
 
 namespace MonoDevelop.PowerShell
 {
@@ -88,6 +89,26 @@ namespace MonoDevelop.PowerShell
 		{
 			session.OnStopped (body);
 			return Task.FromResult (true);
+		}
+
+		public async Task LaunchScript (DebuggerStartInfo startInfo)
+		{
+			var request =  new LaunchRequestArguments {
+				Script = startInfo.Command,
+				Args = ToArray (startInfo.Arguments),
+				Cwd = startInfo.WorkingDirectory,
+				Env = startInfo.EnvironmentVariables
+			};
+			await SendRequest (LaunchRequest.Type, request);
+			await SendRequest (ConfigurationDoneRequest.Type, null);
+		}
+
+		static string[] ToArray (string arguments)
+		{
+			if (string.IsNullOrEmpty (arguments))
+				return null;
+
+			return arguments.Split (new [] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 		}
 	}
 }

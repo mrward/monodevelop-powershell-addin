@@ -42,6 +42,7 @@ namespace MonoDevelop.PowerShell
 		{
 			var powerShellCommand = (PowerShellExecutionCommand)cmd;
 			return new DebuggerStartInfo {
+				Arguments = powerShellCommand.DebuggerArguments,
 				Command = powerShellCommand.ScriptFileName,
 				WorkingDirectory = powerShellCommand.WorkingDirectory
 			};
