@@ -322,5 +322,37 @@ namespace MonoDevelop.PowerShell
 
 			return Task.FromResult (tipInfo);
 		}
+
+		[CommandUpdateHandler (DebugCommands.DebugApplication)]
+		void OnUpdateDebugApplication (CommandInfo info)
+		{
+			info.Enabled = !DebuggingService.IsDebugging &&
+				PowerShellServices.Workspace.IsReady;
+		}
+
+		[CommandHandler (DebugCommands.DebugApplication)]
+		void OnDebugApplication ()
+		{
+			var handler = new DebugApplicationHandler ();
+			handler.DebugInfo = DebugApplicationInfo;
+			if (handler.Run ())
+				DebugApplicationInfo = handler.DebugInfo;
+		}
+
+		DebugApplicationInfo debugApplicationInfo;
+
+		DebugApplicationInfo DebugApplicationInfo {
+			get {
+				if (debugApplicationInfo == null) {
+					debugApplicationInfo = new DebugApplicationInfo {
+						SelectedFile = fileName,
+						WorkingDirectory = fileName.ParentDirectory
+					};
+				}
+
+				return debugApplicationInfo;
+			}
+			set { debugApplicationInfo = value; }
+		}
 	}
 }

@@ -69,6 +69,13 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellParsedDocument.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellTooltipProvider.cs" />
     <Compile Include="MonoDevelop.PowerShell\DocumentToOpen.cs" />
+    <Compile Include="MonoDevelop.Debugger\DebugApplicationDialog.cs" />
+    <Compile Include="MonoDevelop.Debugger\generated.cs" />
+    <Compile Include="MonoDevelop.Debugger\MonoDevelop.Debugger.DebugApplicationDialog.cs">
+      <DependentUpon>DebugApplicationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MonoDevelop.Debugger\DebugApplicationHandler.cs" />
+    <Compile Include="MonoDevelop.PowerShell\DebugApplicationInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
