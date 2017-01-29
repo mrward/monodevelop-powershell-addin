@@ -326,8 +326,11 @@ namespace MonoDevelop.PowerShell
 		[CommandUpdateHandler (DebugCommands.DebugApplication)]
 		void OnUpdateDebugApplication (CommandInfo info)
 		{
-			info.Enabled = !DebuggingService.IsDebugging &&
-				PowerShellServices.Workspace.IsReady;
+			if (!DebuggingService.IsDebugging &&
+			    PowerShellServices.Workspace.IsReady) {
+				info.Enabled = true;
+				info.Text = GettextCatalog.GetString ("Debug PowerShell Script...");
+			}
 		}
 
 		[CommandHandler (DebugCommands.DebugApplication)]

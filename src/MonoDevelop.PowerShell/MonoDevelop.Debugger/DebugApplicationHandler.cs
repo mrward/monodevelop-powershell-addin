@@ -39,6 +39,7 @@ namespace MonoDevelop.Debugger
 		public bool Run ()
 		{
 			var dlg = new DebugApplicationDialog ();
+			dlg.Title = GettextCatalog.GetString ("Debug PowerShell Script");
 			if (DebugInfo != null) {
 				dlg.Arguments = DebugInfo.Arguments;
 				dlg.EnvironmentVariables = DebugInfo.EnvironmentVariables;
