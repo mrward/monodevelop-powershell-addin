@@ -25,6 +25,8 @@
 // THE SOFTWARE.
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using MonoDevelop.Components;
 
 namespace MonoDevelop.Debugger
 {
@@ -33,6 +35,19 @@ namespace MonoDevelop.Debugger
 		public DebugApplicationDialog ()
 		{
 			this.Build ();
+
+			ActivatesDefaultForChildren (fileEntry);
+			ActivatesDefaultForChildren (folderEntry);
+			argsEntry.ActivatesDefault = true;
+
+			buttonOk.GrabDefault ();
+		}
+
+		void ActivatesDefaultForChildren (Gtk.Container widget)
+		{
+			foreach (var child in widget.Children.OfType<Gtk.Entry> ()) {
+				child.ActivatesDefault = true;
+			}
 		}
 
 		public Dictionary<string,string> EnvironmentVariables {
