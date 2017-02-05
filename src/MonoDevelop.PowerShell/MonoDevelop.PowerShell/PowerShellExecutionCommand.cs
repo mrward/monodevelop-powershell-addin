@@ -73,6 +73,15 @@ namespace MonoDevelop.PowerShell
 			}
 		}
 
+		/// <summary>
+		/// Returns false if Run - Debug Application has been used to change the
+		/// arguments.
+		/// </summary>
+		public bool UsingOriginalArguments ()
+		{
+			return Arguments == PowerShellArguments;
+		}
+
 		public static bool CanExecute (string path)
 		{
 			if (!PowerShellPathLocator.Exists)

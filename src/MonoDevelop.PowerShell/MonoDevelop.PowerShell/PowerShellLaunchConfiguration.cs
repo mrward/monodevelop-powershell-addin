@@ -25,8 +25,12 @@
 // THE SOFTWARE.
 
 using System;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using Mono.Debugging.Client;
 using MonoDevelop.Core;
+using MonoDevelop.Core.StringParsing;
+using Newtonsoft.Json;
 
 namespace MonoDevelop.PowerShell
 {
@@ -83,6 +87,52 @@ namespace MonoDevelop.PowerShell
 				StringComparer.OrdinalIgnoreCase.Equals (Request, "launch") &&
 				!string.IsNullOrEmpty (Name) &&
 				!string.IsNullOrEmpty (Script);
+		}
+
+		public PowerShellDebuggerStartInfo CreateDebuggerStartInfo (string scriptFileName)
+		{
+			var stringTagModel = new PowerShellLaunchConfigurationStringTagModel (scriptFileName);
+
+			return new PowerShellDebuggerStartInfo {
+				ArgumentsArray = GetParsedArguments (stringTagModel),
+				Command = ParseString (Script, stringTagModel),
+				WorkingDirectory = ParseWorkingDirectory (stringTagModel)
+			};
+		}
+
+		string ParseString (string text, IStringTagModel stringTagModel)
+		{
+			if (string.IsNullOrEmpty (text))
+				return string.Empty;
+
+			return StringParserService.Parse (text, stringTagModel);
+		}
+
+		string[] GetParsedArguments (IStringTagModel stringTagModel)
+		{
+			if (Arguments != null) {
+				return Arguments.Select (argument => ParseString (argument, stringTagModel))
+					.ToArray ();
+			}
+
+			return new string[0];
+		}
+
+		/// <summary>
+		/// Ensures the working directory refers to a directory not a file.
+		/// Some launch configurations used ${file} as the working directory.
+		/// </summary>
+		string ParseWorkingDirectory (IStringTagModel stringTagModel)
+		{
+			string parsedWorkingDirectory = ParseString (WorkingDirectory, stringTagModel);
+			if (string.IsNullOrEmpty (parsedWorkingDirectory))
+				return parsedWorkingDirectory;
+
+			var filePath = new FilePath (parsedWorkingDirectory);
+			if (!filePath.IsDirectory)
+				return filePath.ParentDirectory;
+
+			return filePath;
 		}
 	}
 }

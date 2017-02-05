@@ -186,5 +186,14 @@ namespace MonoDevelop.PowerShell
 		{
 			launchConfigurations.SetActiveLaunchConfiguration (config, document);
 		}
+
+		public PowerShellLaunchConfiguration GetActiveLaunchConfiguration (string scriptFileName)
+		{
+			var activeConfig = launchConfigurations.GetActiveLaunchConfiguration (scriptFileName);
+			if (activeConfig.Id != PowerShellLaunchConfiguration.NoneConfigurationId)
+				return activeConfig;
+
+			return null;
+		}
 	}
 }

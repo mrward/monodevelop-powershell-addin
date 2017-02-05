@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 
 using Mono.Debugging.Client;
-using MonoDevelop.Core;
 using MonoDevelop.Core.Execution;
 using MonoDevelop.Debugger;
 
@@ -41,16 +40,31 @@ namespace MonoDevelop.PowerShell
 		public override DebuggerStartInfo CreateDebuggerStartInfo (ExecutionCommand cmd)
 		{
 			var powerShellCommand = (PowerShellExecutionCommand)cmd;
-			return new DebuggerStartInfo {
-				Arguments = powerShellCommand.DebuggerArguments,
-				Command = powerShellCommand.ScriptFileName,
-				WorkingDirectory = powerShellCommand.WorkingDirectory
-			};
+			return CreateDebuggerStartInfo (powerShellCommand);
 		}
 
 		public override DebuggerSession CreateSession ()
 		{
 			return new PowerShellDebuggerSession ();
+		}
+
+		PowerShellDebuggerStartInfo CreateDebuggerStartInfo (PowerShellExecutionCommand command)
+		{
+			PowerShellLaunchConfiguration launchConfiguration = null;
+			if (command.UsingOriginalArguments ()) {
+				launchConfiguration = PowerShellServices.Workspace.GetActiveLaunchConfiguration (
+					command.ScriptFileName);
+			}
+
+			if (launchConfiguration == null) {
+				return new PowerShellDebuggerStartInfo {
+					Arguments = command.DebuggerArguments,
+					Command = command.ScriptFileName,
+					WorkingDirectory = command.WorkingDirectory
+				};
+			}
+
+			return launchConfiguration.CreateDebuggerStartInfo (command.ScriptFileName);
 		}
 	}
 }

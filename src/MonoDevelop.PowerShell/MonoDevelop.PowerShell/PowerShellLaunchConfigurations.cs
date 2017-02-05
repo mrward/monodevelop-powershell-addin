@@ -39,20 +39,25 @@ namespace MonoDevelop.PowerShell
 
 		public IEnumerable<PowerShellLaunchConfiguration> GetConfigurations (Document document)
 		{
-			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (document);
+			return GetConfigurations (document.FileName);
+		}
+
+		public IEnumerable<PowerShellLaunchConfiguration> GetConfigurations (FilePath scriptFileName)
+		{
+			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (scriptFileName);
 			if (cacheInfo != null) {
 				if (cacheInfo.IsOutOfDate ()) {
-					return ReadConfigurations (document, cacheInfo.GetActiveConfigurationName ());
+					return ReadConfigurations (scriptFileName, cacheInfo.GetActiveConfigurationName ());
 				}
 				return cacheInfo.Configurations;
 			}
 
-			return ReadConfigurations (document);
+			return ReadConfigurations (scriptFileName);
 		}
 
-		PowerShellLaunchConfigurationCacheInfo GetExistingConfigurations (Document document)
+		PowerShellLaunchConfigurationCacheInfo GetExistingConfigurations (FilePath scriptFileName)
 		{
-			string directory = document.FileName.ParentDirectory;
+			string directory = scriptFileName.ParentDirectory;
 			PowerShellLaunchConfigurationCacheInfo cacheInfo = null;
 			if (configurationsCache.TryGetValue (directory, out cacheInfo)) {
 				return cacheInfo;
@@ -62,7 +67,7 @@ namespace MonoDevelop.PowerShell
 
 		public void SetActiveLaunchConfiguration (PowerShellLaunchConfiguration config, Document document)
 		{
-			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (document);
+			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (document.FileName);
 			if (cacheInfo != null) {
 				foreach (var existingConfig in cacheInfo.Configurations) {
 					existingConfig.IsActive = false;
@@ -73,9 +78,9 @@ namespace MonoDevelop.PowerShell
 			LoggingService.LogWarning ("PowerShell launch configuration not found. Unable to set active configuration. '{0}'", document.FileName);
 		}
 
-		List<PowerShellLaunchConfiguration> ReadConfigurations (Document document, string activeConfiguration = "None")
+		List<PowerShellLaunchConfiguration> ReadConfigurations (FilePath scriptFileName, string activeConfiguration = "None")
 		{
-			string directory = document.FileName.ParentDirectory;
+			string directory = scriptFileName.ParentDirectory;
 			try {
 				var reader = new PowerShellLaunchConfigurationsReader ();
 				List<PowerShellLaunchConfiguration> foundConfigurations = reader.Read (directory);
@@ -115,6 +120,12 @@ namespace MonoDevelop.PowerShell
 			var defaultActiveConfiguration = configurations.FirstOrDefault ();
 			if (defaultActiveConfiguration != null)
 				defaultActiveConfiguration.IsActive = true;
+		}
+
+		public PowerShellLaunchConfiguration GetActiveLaunchConfiguration (FilePath scriptFileName)
+		{
+			return GetConfigurations (scriptFileName)
+				.FirstOrDefault (configuration => configuration.IsActive);
 		}
 	}
 }

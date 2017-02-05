@@ -95,12 +95,22 @@ namespace MonoDevelop.PowerShell
 		{
 			var request =  new LaunchRequestArguments {
 				Script = startInfo.Command,
-				Args = ToArray (startInfo.Arguments),
+				Args = GetArguments (startInfo),
 				Cwd = startInfo.WorkingDirectory,
 				Env = startInfo.EnvironmentVariables
 			};
 			await SendRequest (LaunchRequest.Type, request);
 			await SendRequest (ConfigurationDoneRequest.Type, null);
+		}
+
+		static string[] GetArguments (DebuggerStartInfo startInfo)
+		{
+			var powerShellDebugStartInfo = startInfo as PowerShellDebuggerStartInfo;
+			if (powerShellDebugStartInfo?.ArgumentsArray != null) {
+				return powerShellDebugStartInfo.ArgumentsArray;
+			}
+
+			return ToArray (startInfo.Arguments);
 		}
 
 		static string[] ToArray (string arguments)
