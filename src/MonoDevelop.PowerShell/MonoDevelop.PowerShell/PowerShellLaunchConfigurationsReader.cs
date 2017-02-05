@@ -27,14 +27,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MonoDevelop.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MonoDevelop.PowerShell
 {
-	static class PowerShellLaunchConfigurationsReader
+	class PowerShellLaunchConfigurationsReader
 	{
-		public static List<PowerShellLaunchConfiguration> Read (string directory)
+		public List<PowerShellLaunchConfiguration> Read (string directory)
 		{
 			if (!Directory.Exists (directory))
 				return null;
@@ -43,8 +44,14 @@ namespace MonoDevelop.PowerShell
 			if (launchFileName == null)
 				return null;
 
-			return ReadFile (launchFileName);
+			FileName = launchFileName;
+			LastWriteTime = File.GetLastWriteTime (launchFileName);
+
+			return ReadFile ();
 		}
+
+		public FilePath FileName { get; private set; }
+		public DateTime? LastWriteTime { get; private set; }
 
 		static string FindLaunchFile (string directory)
 		{
@@ -59,15 +66,15 @@ namespace MonoDevelop.PowerShell
 			return null;
 		}
 
-		static List<PowerShellLaunchConfiguration> ReadFile (string fileName)
+		List<PowerShellLaunchConfiguration> ReadFile ()
 		{
-			JObject jsonObject = ReadJsonFile (fileName);
+			JObject jsonObject = ReadJsonFile ();
 			return GetLaunchConfigurations (jsonObject);
 		}
 
-		static JObject ReadJsonFile (string fileName)
+		JObject ReadJsonFile ()
 		{
-			using (var fileStream = File.OpenRead (fileName)) {
+			using (var fileStream = File.OpenRead (FileName)) {
 				using (var reader = new StreamReader (fileStream)) {
 					using (var jsonReader = new JsonTextReader (reader)) {
 						return JObject.Load (jsonReader);
@@ -78,7 +85,7 @@ namespace MonoDevelop.PowerShell
 
 		static List<PowerShellLaunchConfiguration> GetLaunchConfigurations (JObject jsonObject)
 		{
-			JsonSerializer serializer = new JsonSerializer();
+			var serializer = new JsonSerializer ();
 			var launchConfiguration = (LaunchConfiguration)serializer.Deserialize (
 				new JTokenReader (jsonObject),
 				typeof(LaunchConfiguration));

@@ -81,6 +81,7 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfiguration.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationsReader.cs" />
     <Compile Include="MonoDevelop.PowerShell\LaunchConfiguration.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationCacheInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

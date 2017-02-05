@@ -1,5 +1,5 @@
 ﻿//
-// PowerShellLaunchConfiguration.cs
+// PowerShellLaunchConfigurationCacheInfo.cs
 //
 // Author:
 //       Matt Ward <matt.ward@xamarin.com>
@@ -25,64 +25,45 @@
 // THE SOFTWARE.
 
 using System;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
 using MonoDevelop.Core;
+using System.Linq;
 
 namespace MonoDevelop.PowerShell
 {
-	class PowerShellLaunchConfiguration
+	class PowerShellLaunchConfigurationCacheInfo
 	{
-		string script;
-
-		public static readonly string NoneConfigurationId = "None";
-
-		public static PowerShellLaunchConfiguration CreateNoneConfiguration ()
+		public PowerShellLaunchConfigurationCacheInfo (
+			List<PowerShellLaunchConfiguration> configurations,
+			FilePath launchJsonFileName,
+			DateTime lastWriteTime)
 		{
-			return new PowerShellLaunchConfiguration {
-				Id = NoneConfigurationId,
-				Name = GettextCatalog.GetString ("None")
-			};
+			Configurations = configurations;
+			LaunchJsonFileName = launchJsonFileName;
+			LaunchJsonLastWriteTime = lastWriteTime;
 		}
 
-		[JsonIgnore]
-		public string Id { get; private set; }
+		public List<PowerShellLaunchConfiguration> Configurations { get; private set; }
+		public FilePath LaunchJsonFileName { get; private set; }
+		public DateTime LaunchJsonLastWriteTime { get; private set; }
 
-		[JsonProperty ("type")]
-		public string Type { get; set; }
+		public bool IsOutOfDate ()
+		{
+			if (!File.Exists (LaunchJsonFileName))
+				return true;
 
-		[JsonProperty ("request")]
-		public string Request { get; set; }
-
-		[JsonProperty ("name")]
-		public string Name { get; set; }
-
-		[JsonIgnore]
-		public bool IsActive { get; set; }
-
-		[JsonProperty ("script")]
-		public string Script {
-			get {
-				return script ?? Program;
-			}
-			set { script = value; }
+			DateTime lastWriteTime = File.GetLastWriteTime (LaunchJsonFileName);
+			return lastWriteTime > LaunchJsonLastWriteTime;
 		}
 
-		[JsonProperty ("program")]
-		public string Program { get; set; }
-
-		[JsonProperty ("args")]
-		public string[] Arguments { get; set; }
-
-		[JsonProperty ("cwd")]
-		public string WorkingDirectory { get; set; }
-
-		public bool IsValid ()
+		public string GetActiveConfigurationName ()
 		{
-			return !string.IsNullOrEmpty (Type) &&
-				StringComparer.OrdinalIgnoreCase.Equals (Type, "PowerShell") &&
-				StringComparer.OrdinalIgnoreCase.Equals (Request, "launch") &&
-				!string.IsNullOrEmpty (Name) &&
-				!string.IsNullOrEmpty (Script);
+			var activeConfiguration = Configurations.FirstOrDefault (c => c.IsActive);
+			if (activeConfiguration != null)
+				return activeConfiguration.Name;
+
+			return null;
 		}
 	}
 }

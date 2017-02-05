@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
 
@@ -33,33 +34,37 @@ namespace MonoDevelop.PowerShell
 {
 	class PowerShellLaunchConfigurations
 	{
-		Dictionary<string, List<PowerShellLaunchConfiguration>> configurationsCache =
-			new Dictionary<string, List<PowerShellLaunchConfiguration>> ();
+		Dictionary<string, PowerShellLaunchConfigurationCacheInfo> configurationsCache =
+			new Dictionary<string, PowerShellLaunchConfigurationCacheInfo> ();
 
 		public IEnumerable<PowerShellLaunchConfiguration> GetConfigurations (Document document)
 		{
-			List<PowerShellLaunchConfiguration> configurations = GetExistingConfigurations (document);
-			if (configurations != null)
-				return configurations;
+			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (document);
+			if (cacheInfo != null) {
+				if (cacheInfo.IsOutOfDate ()) {
+					return ReadConfigurations (document, cacheInfo.GetActiveConfigurationName ());
+				}
+				return cacheInfo.Configurations;
+			}
 
 			return ReadConfigurations (document);
 		}
 
-		List<PowerShellLaunchConfiguration> GetExistingConfigurations (Document document)
+		PowerShellLaunchConfigurationCacheInfo GetExistingConfigurations (Document document)
 		{
 			string directory = document.FileName.ParentDirectory;
-			List<PowerShellLaunchConfiguration> configurations = null;
-			if (configurationsCache.TryGetValue (directory, out configurations)) {
-				return configurations;
+			PowerShellLaunchConfigurationCacheInfo cacheInfo = null;
+			if (configurationsCache.TryGetValue (directory, out cacheInfo)) {
+				return cacheInfo;
 			}
 			return null;
 		}
 
 		public void SetActiveLaunchConfiguration (PowerShellLaunchConfiguration config, Document document)
 		{
-			List<PowerShellLaunchConfiguration> configurations = GetExistingConfigurations (document);
-			if (configurations != null) {
-				foreach (var existingConfig in configurations) {
+			PowerShellLaunchConfigurationCacheInfo cacheInfo = GetExistingConfigurations (document);
+			if (cacheInfo != null) {
+				foreach (var existingConfig in cacheInfo.Configurations) {
 					existingConfig.IsActive = false;
 				}
 				config.IsActive = true;
@@ -68,15 +73,22 @@ namespace MonoDevelop.PowerShell
 			LoggingService.LogWarning ("PowerShell launch configuration not found. Unable to set active configuration. '{0}'", document.FileName);
 		}
 
-		List<PowerShellLaunchConfiguration> ReadConfigurations (Document document)
+		List<PowerShellLaunchConfiguration> ReadConfigurations (Document document, string activeConfiguration = "None")
 		{
 			string directory = document.FileName.ParentDirectory;
 			try {
-				List<PowerShellLaunchConfiguration> foundConfigurations =
-					PowerShellLaunchConfigurationsReader.Read (directory);
+				var reader = new PowerShellLaunchConfigurationsReader ();
+				List<PowerShellLaunchConfiguration> foundConfigurations = reader.Read (directory);
 				if (foundConfigurations != null) {
-					foundConfigurations.Insert (0, PowerShellLaunchConfiguration.None);
-					configurationsCache[directory] = foundConfigurations;
+					AddNoneConfiguration (foundConfigurations);
+					MarkActiveConfiguration (foundConfigurations, activeConfiguration);
+
+					var cacheInfo = new PowerShellLaunchConfigurationCacheInfo (
+						foundConfigurations,
+						reader.FileName,
+						reader.LastWriteTime.Value);
+					configurationsCache[directory] = cacheInfo;
+
 					return foundConfigurations;
 				}
 			} catch (Exception ex) {
@@ -84,6 +96,25 @@ namespace MonoDevelop.PowerShell
 			}
 
 			return new List<PowerShellLaunchConfiguration> ();
+		}
+
+		void AddNoneConfiguration (List<PowerShellLaunchConfiguration> configurations)
+		{
+			var noneConfiguration = PowerShellLaunchConfiguration.CreateNoneConfiguration ();
+			configurations.Insert (0, noneConfiguration);
+		}
+
+		void MarkActiveConfiguration (IEnumerable<PowerShellLaunchConfiguration> configurations, string name)
+		{
+			var matchedConfiguration = configurations.FirstOrDefault (configuration => StringComparer.OrdinalIgnoreCase.Equals (configuration.Name, name));
+			if (matchedConfiguration != null) {
+				matchedConfiguration.IsActive = true;
+				return;
+			}
+
+			var defaultActiveConfiguration = configurations.FirstOrDefault ();
+			if (defaultActiveConfiguration != null)
+				defaultActiveConfiguration.IsActive = true;
 		}
 	}
 }
