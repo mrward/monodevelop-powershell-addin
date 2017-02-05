@@ -76,6 +76,11 @@
     </Compile>
     <Compile Include="MonoDevelop.Debugger\DebugApplicationHandler.cs" />
     <Compile Include="MonoDevelop.PowerShell\DebugApplicationInfo.cs" />
+    <Compile Include="MonoDevelop.PowerShell\SelectActiveConfigurationCommandHandler.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurations.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfiguration.cs" />
+    <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationsReader.cs" />
+    <Compile Include="MonoDevelop.PowerShell\LaunchConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

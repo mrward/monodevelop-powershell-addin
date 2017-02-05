@@ -37,6 +37,7 @@ namespace MonoDevelop.PowerShell
 	class PowerShellWorkspace
 	{
 		PowerShellSession session;
+		PowerShellLaunchConfigurations launchConfigurations = new PowerShellLaunchConfigurations ();
 
 		public void Initialize ()
 		{
@@ -141,6 +142,8 @@ namespace MonoDevelop.PowerShell
 		void ShutdownSession ()
 		{
 			try {
+				launchConfigurations = new PowerShellLaunchConfigurations ();
+
 				IsReady = false;
 				session.Started -= SessionStarted;
 				session.Stop ();
@@ -172,6 +175,16 @@ namespace MonoDevelop.PowerShell
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("Error processing after session started.", ex);
 			}
+		}
+
+		public IEnumerable<PowerShellLaunchConfiguration> GetLaunchConfigurations (Document document)
+		{
+			return launchConfigurations.GetConfigurations (document);
+		}
+
+		public void SetActiveLaunchConfiguration (PowerShellLaunchConfiguration config, Document document)
+		{
+			launchConfigurations.SetActiveLaunchConfiguration (config, document);
 		}
 	}
 }

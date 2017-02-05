@@ -108,4 +108,23 @@
 	<Extension path="/MonoDevelop/Ide/FileTemplates">
 		<FileTemplate id="EmptyPowerShellFile" resource="EmptyPowerShellFile.xft.xml" />
 	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/Commands">
+		<Command
+			id="MonoDevelop.PowerShell.Commands.SelectActiveConfiguration"
+			type="radio|array"
+			defaultHandler="MonoDevelop.PowerShell.SelectActiveConfigurationCommandHandler"
+			_label="_Active Configuration" />
+	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/MainMenu/Run">
+		<ItemSet
+			id="SelectActiveConfiguration"
+			_label="_Active Configuration"
+			autohide="true"
+			insertafter="MonoDevelop.Debugger.DebugCommands.Detach"
+			insertbefore="MonoDevelop.Debugger.SteppingSection">
+			<CommandItem id="MonoDevelop.PowerShell.Commands.SelectActiveConfiguration" />
+		</ItemSet>
+	</Extension>
 </ExtensionModel>
