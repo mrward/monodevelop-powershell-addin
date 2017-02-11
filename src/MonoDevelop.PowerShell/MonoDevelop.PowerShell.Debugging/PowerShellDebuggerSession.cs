@@ -198,6 +198,16 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnRemoveBreakEvent (BreakEventInfo eventInfo)
 		{
+			if (HasExited)
+				return;
+
+			var breakpoint = eventInfo.BreakEvent as Breakpoint;
+			if (breakpoint == null)
+				return;
+
+			if (breakpoints.Remove (breakpoint)) {
+				UpdateBreakpoints (breakpoint.FileName).Wait (debugCommandTimeout);
+			}
 		}
 
 		protected override async void OnRun (DebuggerStartInfo startInfo)
