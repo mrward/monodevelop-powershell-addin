@@ -84,6 +84,7 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationCacheInfo.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationStringTagModel.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellDebuggerStartInfo.cs" />
+    <Compile Include="MonoDevelop.PowerShell\RunPowerShellScriptExecutionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

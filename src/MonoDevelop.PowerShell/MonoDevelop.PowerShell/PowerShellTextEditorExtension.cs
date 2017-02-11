@@ -39,7 +39,6 @@ using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
-using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Refactoring;
 
@@ -293,7 +292,8 @@ namespace MonoDevelop.PowerShell
 		[CommandHandler (ProjectCommands.Run)]
 		void OnRun ()
 		{
-			var runOperation = IdeApp.ProjectOperations.ExecuteFile (fileName, Runtime.ProcessService.DefaultExecutionHandler);
+			var executionHandler = new RunPowerShellScriptExecutionHandler ();
+			var runOperation = IdeApp.ProjectOperations.ExecuteFile (fileName, executionHandler);
 			IdeApp.ProjectOperations.CurrentRunOperation = runOperation;
 		}
 

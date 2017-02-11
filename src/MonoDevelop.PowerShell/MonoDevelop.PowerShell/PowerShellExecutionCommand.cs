@@ -34,16 +34,16 @@ namespace MonoDevelop.PowerShell
 {
 	class PowerShellExecutionCommand : NativeExecutionCommand
 	{
-		public PowerShellExecutionCommand (string scriptFileName)
+		public PowerShellExecutionCommand (string scriptFileName, params string[] parameters)
 		{
-			Arguments = GetArguments (scriptFileName);
+			Arguments = GetArguments (scriptFileName, parameters);
 			PowerShellArguments = Arguments;
 			Command = PowerShellPathLocator.PowerShellPath;
 			ScriptFileName = scriptFileName;
 			WorkingDirectory = Path.GetDirectoryName (scriptFileName);
 		}
 
-		string GetArguments (string scriptFileName)
+		string GetArguments (string scriptFileName, params string[] parameters)
 		{
 			var arguments = new StringBuilder ();
 
@@ -51,7 +51,11 @@ namespace MonoDevelop.PowerShell
 				arguments.Append ("-ExecutionPolicy Unrestricted ");
 			}
 
-			arguments.Append ("-Command & \"" + scriptFileName + "\"");
+			arguments.Append ("-Command '& \"" + scriptFileName + "\"'");
+			foreach (string parameter in parameters) {
+				arguments.Append (' ');
+				arguments.Append (parameter);
+			}
 
 			return arguments.ToString ();
 		}

@@ -25,9 +25,7 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Mono.Debugging.Client;
 using MonoDevelop.Core;
 using MonoDevelop.Core.StringParsing;
 using Newtonsoft.Json;
@@ -133,6 +131,18 @@ namespace MonoDevelop.PowerShell
 				return filePath.ParentDirectory;
 
 			return filePath;
+		}
+
+		public PowerShellExecutionCommand CreatePowerShellExecutionCommand (string scriptFileName)
+		{
+			var stringTagModel = new PowerShellLaunchConfigurationStringTagModel (scriptFileName);
+
+			string parsedScriptFileName = ParseString (Script, stringTagModel);
+
+			var parameters = GetParsedArguments (stringTagModel);
+			return new PowerShellExecutionCommand (parsedScriptFileName, parameters) {
+				WorkingDirectory = ParseWorkingDirectory (stringTagModel)
+			};
 		}
 	}
 }
