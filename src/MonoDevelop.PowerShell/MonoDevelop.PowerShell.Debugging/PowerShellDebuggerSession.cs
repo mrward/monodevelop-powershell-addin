@@ -277,7 +277,6 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnUpdateBreakEvent (BreakEventInfo eventInfo)
 		{
-			throw new NotImplementedException ();
 		}
 
 		internal void OnTargetExited (int? exitCode)
