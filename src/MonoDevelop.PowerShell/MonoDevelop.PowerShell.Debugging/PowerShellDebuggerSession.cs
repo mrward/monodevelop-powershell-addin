@@ -63,7 +63,7 @@ namespace MonoDevelop.PowerShell
 
 		protected override void OnEnableBreakEvent (BreakEventInfo eventInfo, bool enable)
 		{
-			throw new NotImplementedException ();
+			UpdateBreakpoints ().Wait (debugCommandTimeout);
 		}
 
 		protected override async void OnExit ()
