@@ -268,6 +268,8 @@ namespace MonoDevelop.PowerShell
 				return;
 			}
 
+			IdeApp.Workbench.SaveAll ();
+
 			var debugOperation = IdeApp.ProjectOperations.DebugFile (Editor.FileName);
 			IdeApp.ProjectOperations.CurrentRunOperation = debugOperation;
 		}
@@ -292,6 +294,8 @@ namespace MonoDevelop.PowerShell
 		[CommandHandler (ProjectCommands.Run)]
 		void OnRun ()
 		{
+			IdeApp.Workbench.SaveAll ();
+
 			var executionHandler = new RunPowerShellScriptExecutionHandler ();
 			var runOperation = IdeApp.ProjectOperations.ExecuteFile (fileName, executionHandler);
 			IdeApp.ProjectOperations.CurrentRunOperation = runOperation;
