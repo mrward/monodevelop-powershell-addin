@@ -153,11 +153,13 @@ namespace MonoDevelop.PowerShell
 
 		async Task UpdateBreakpoints (string fileName, IEnumerable<Breakpoint> breakpointsForFile)
 		{
+			var enabledBreakpoints = breakpointsForFile.Where (breakpoint => breakpoint.Enabled);
+
 			var message = new SetBreakpointsRequestArguments {
 				Source = new Source {
 					Path = fileName
 				},
-				Breakpoints = breakpointsForFile.Select (CreateSourceBreakpoint).ToArray ()
+				Breakpoints = enabledBreakpoints.Select (CreateSourceBreakpoint).ToArray ()
 			};
 			await debugClient.SendRequest (SetBreakpointsRequest.Type, message);
 
