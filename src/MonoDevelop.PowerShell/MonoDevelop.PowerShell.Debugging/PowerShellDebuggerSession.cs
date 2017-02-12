@@ -136,11 +136,16 @@ namespace MonoDevelop.PowerShell
 			return null;
 		}
 
+		/// <summary>
+		/// Use Column 1. For some reason if the breakpoint is on the last line of
+		/// text the breakpoint sometimes uses the last column. This seems to prevent
+		/// the PowerShell debugger from setting the breakpoint so we default to 1 instead.
+		/// </summary>
 		SourceBreakpoint CreateSourceBreakpoint (Breakpoint breakpoint)
 		{
 			return new SourceBreakpoint {
 				Condition = breakpoint.ConditionExpression,
-				Column = breakpoint.Column,
+				Column = 1,
 				Line = breakpoint.Line
 			};
 		}
@@ -275,6 +280,11 @@ namespace MonoDevelop.PowerShell
 			debugClient.SendRequest (PauseRequest.Type, null).Wait (debugCommandTimeout);
 		}
 
+		/// <summary>
+		/// Breakpoints are updated if the text is edited in the text editor.
+		/// This is not supported since changes to the PowerShell script are not
+		/// passed onto the PowerShell debugger.
+		/// </summary>
 		protected override void OnUpdateBreakEvent (BreakEventInfo eventInfo)
 		{
 		}
