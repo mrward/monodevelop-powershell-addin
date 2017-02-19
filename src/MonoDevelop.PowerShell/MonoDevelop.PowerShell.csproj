@@ -85,6 +85,7 @@
     <Compile Include="MonoDevelop.PowerShell\PowerShellLaunchConfigurationStringTagModel.cs" />
     <Compile Include="MonoDevelop.PowerShell\PowerShellDebuggerStartInfo.cs" />
     <Compile Include="MonoDevelop.PowerShell\RunPowerShellScriptExecutionHandler.cs" />
+    <Compile Include="MonoDevelop.PowerShell\BreakpointExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />

@@ -148,6 +148,7 @@ namespace MonoDevelop.PowerShell
 		{
 			return new SourceBreakpoint {
 				Condition = breakpoint.ConditionExpression,
+				HitCondition = breakpoint.GetPowerShellHitCondition (),
 				Line = breakpoint.Line
 			};
 		}
