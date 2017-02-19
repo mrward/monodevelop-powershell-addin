@@ -137,15 +137,17 @@ namespace MonoDevelop.PowerShell
 		}
 
 		/// <summary>
-		/// Use Column 1. For some reason if the breakpoint is on the last line of
+		/// Do not set breakpoint column. For some reason if the breakpoint is on the last line of
 		/// text the breakpoint sometimes uses the last column. This seems to prevent
-		/// the PowerShell debugger from setting the breakpoint so we default to 1 instead.
+		/// the PowerShell debugger from setting the breakpoint so we default to null instead.
+		/// Using 1 for the Column seems to prevent breakpoints from being hit inside loops.
+		/// The PowerShell extension for VS Code does not send a column for the breakpoint
+		/// so the addin does not send one either.
 		/// </summary>
 		SourceBreakpoint CreateSourceBreakpoint (Breakpoint breakpoint)
 		{
 			return new SourceBreakpoint {
 				Condition = breakpoint.ConditionExpression,
-				Column = 1,
 				Line = breakpoint.Line
 			};
 		}
