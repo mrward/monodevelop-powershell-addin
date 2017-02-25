@@ -51,7 +51,7 @@ namespace MonoDevelop.PowerShell
 				arguments.Append ("-ExecutionPolicy Unrestricted ");
 			}
 
-			arguments.Append ("-Command '& \"" + scriptFileName + "\"'");
+			arguments.Append ("-Command \"& '" + scriptFileName + "'\"");
 			foreach (string parameter in parameters) {
 				arguments.Append (' ');
 				arguments.Append (parameter);
