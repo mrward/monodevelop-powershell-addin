@@ -145,6 +145,10 @@ function Get-AvailablePort {
     return $null
 }
 
+if (-not $BundledModulesPath) {
+    $BundledModulesPath = [System.IO.Path]::Combine($PSScriptRoot, '..', 'modules')
+}
+
 # Add BundledModulesPath to $env:PSModulePath
 if ($BundledModulesPath) {
     $env:PSMODULEPATH = $env:PSMODULEPATH + [System.IO.Path]::PathSeparator + $BundledModulesPath

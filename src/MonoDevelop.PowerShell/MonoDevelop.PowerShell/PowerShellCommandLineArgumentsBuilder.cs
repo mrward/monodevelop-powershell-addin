@@ -58,8 +58,17 @@ namespace MonoDevelop.PowerShell
 			AppendSingleQuotedParameter ("-HostName", HostName);
 			AppendSingleQuotedParameter ("-HostProfileId", HostProfileId);
 			AppendSingleQuotedParameter ("-HostVersion", HostVersion);
-			AppendSingleQuotedParameter ("-BundledModulesPath", BundlesModulesPath);
-			arguments.Append ("-LogLevel " + LogLevel + " ");
+
+			// Spaces in path where the addin is installed seem to cause PowerShell to
+			// fail to handle the BundledModulesPath parameter even though it is quoted.
+			// PowerShell seems to think the last part of the path after the space is
+			// for another positional parameter which it cannot find. So for now this
+			// path is not specified and the Start-EditorServices.ps1 file determines
+			// the path relative to its own location.
+			if (!Platform.IsMac)
+				AppendSingleQuotedParameter ("-BundledModulesPath", BundlesModulesPath);
+
+			AppendSingleQuotedParameter ("-LogLevel", LogLevel);
 			AppendSingleQuotedParameter ("-LogPath", LogPath);
 
 			Arguments = arguments.ToString ();
