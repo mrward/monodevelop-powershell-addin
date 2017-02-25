@@ -52,7 +52,7 @@ namespace MonoDevelop.PowerShell
 				arguments.Append ("-ExecutionPolicy Unrestricted ");
 			}
 
-			AppendSingleQuotedParameter ("-Command &", PowerShellScriptPath);
+			arguments.Append ("-Command \"& '" + PowerShellScriptPath + "'\" ");
 
 			AppendSingleQuotedParameter ("-EditorServicesVersion", RequiredEditorServicesVersion);
 			AppendSingleQuotedParameter ("-HostName", HostName);
