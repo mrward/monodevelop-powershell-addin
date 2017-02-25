@@ -190,7 +190,7 @@ namespace MonoDevelop.PowerShell
 		public PowerShellLaunchConfiguration GetActiveLaunchConfiguration (string scriptFileName)
 		{
 			var activeConfig = launchConfigurations.GetActiveLaunchConfiguration (scriptFileName);
-			if (activeConfig.Id != PowerShellLaunchConfiguration.NoneConfigurationId)
+			if (activeConfig != null && activeConfig.Id != PowerShellLaunchConfiguration.NoneConfigurationId)
 				return activeConfig;
 
 			return null;
