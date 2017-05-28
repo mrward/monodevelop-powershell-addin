@@ -151,7 +151,7 @@ if (-not $BundledModulesPath) {
 
 # Add BundledModulesPath to $env:PSModulePath
 if ($BundledModulesPath) {
-    $env:PSMODULEPATH = $env:PSMODULEPATH + [System.IO.Path]::PathSeparator + $BundledModulesPath
+    $env:PSModulePath = $env:PSModulePath + [System.IO.Path]::PathSeparator + $BundledModulesPath
 }
 
 # Check if PowerShellGet module is available
