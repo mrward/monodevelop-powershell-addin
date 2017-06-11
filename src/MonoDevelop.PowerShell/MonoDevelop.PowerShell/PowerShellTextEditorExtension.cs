@@ -136,13 +136,13 @@ namespace MonoDevelop.PowerShell
 
 		public async override Task<ICompletionDataList> HandleCodeCompletionAsync (
 			CodeCompletionContext completionContext,
-			char completionChar,
+			CompletionTriggerInfo triggerInfo,
 			CancellationToken token = default (CancellationToken))
 		{
 			if (Editor.EditMode == EditMode.TextLink)
 				return null;
 
-			if (completionChar == ' ')
+			if (triggerInfo.TriggerCharacter == ' ')
 				return null;
 
 			try {

@@ -89,9 +89,11 @@ namespace MonoDevelop.PowerShell
 
 			editor.StartTextLinkMode (new TextLinkModeOptions (links, (arg) => {
 				if (!arg.Success) {
-					var textChanges = editor.Version.GetChangesTo (oldVersion).ToList ();
-					foreach (var v in textChanges) {
-						editor.ReplaceText (v.Offset, v.RemovalLength, v.InsertedText);
+					List<TextChangeEventArgs> eventArgs = editor.Version.GetChangesTo (oldVersion).ToList ();
+					foreach (TextChangeEventArgs eventArg in eventArgs) {
+						foreach (TextChange textChange in eventArg.TextChanges) {
+							editor.ReplaceText (textChange.Offset, textChange.RemovalLength, textChange.InsertedText);
+						}
 					}
 				}
 			}));

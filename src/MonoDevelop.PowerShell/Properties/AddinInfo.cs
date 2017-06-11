@@ -35,9 +35,9 @@ using Mono.Addins;
 [assembly:AddinName ("PowerShell")]
 [assembly:AddinDescription ("Adds PowerShell editing support")]
 
-[assembly:AddinDependency ("Core", "6.0")]
-[assembly:AddinDependency ("Debugger", "6.0")]
-[assembly:AddinDependency ("Ide", "6.0")]
-[assembly:AddinDependency ("Refactoring", "6.0")]
-[assembly:AddinDependency ("SourceEditor2", "6.0")]
+[assembly:AddinDependency ("Core", "7.0")]
+[assembly:AddinDependency ("Debugger", "7.0")]
+[assembly:AddinDependency ("Ide", "7.0")]
+[assembly:AddinDependency ("Refactoring", "7.0")]
+[assembly:AddinDependency ("SourceEditor2", "7.0")]
 

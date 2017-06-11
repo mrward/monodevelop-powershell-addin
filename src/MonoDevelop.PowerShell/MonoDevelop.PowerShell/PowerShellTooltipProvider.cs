@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
@@ -33,7 +32,6 @@ using MonoDevelop.Components;
 using MonoDevelop.Core.Text;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Editor;
-using Xwt;
 
 namespace MonoDevelop.PowerShell
 {
@@ -111,12 +109,12 @@ namespace MonoDevelop.PowerShell
 			return TextSegment.Invalid;
 		}
 
-		public override Control CreateTooltipWindow (
+		public override Window CreateTooltipWindow (
 			TextEditor editor,
 			DocumentContext ctx,
 			TooltipItem item,
 			int offset,
-			ModifierKeys modifierState)
+			Xwt.ModifierKeys modifierState)
 		{
 			var doc = ctx;
 			if (doc == null)

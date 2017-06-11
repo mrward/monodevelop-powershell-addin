@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.MessageProtocol.Channel;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
@@ -156,7 +157,7 @@ namespace MonoDevelop.PowerShell
 
 			var message = new DidChangeTextDocumentParams {
 				Uri = fileName,
-				ContentChanges = new [] { e.CreateTextDocumentChangeEvent (editor) }
+				ContentChanges = e.CreateTextDocumentChangeEvents (editor).ToArray ()
 			};
 			languageServiceClient.SendEvent (DidChangeTextDocumentNotification.Type, message);
 		}

@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Core.Text;
 using MonoDevelop.Ide.Editor;
@@ -32,10 +34,15 @@ namespace MonoDevelop.PowerShell
 {
 	static class TextChangeEventArgsExtensions
 	{
-		public static TextDocumentChangeEvent CreateTextDocumentChangeEvent (this TextChangeEventArgs e, TextEditor editor)
+		public static IEnumerable<TextDocumentChangeEvent> CreateTextDocumentChangeEvents (this TextChangeEventArgs e, TextEditor editor)
 		{
-			int startOffset = e.Offset;
-			int endOffset = e.Offset + e.RemovalLength;
+			return e.TextChanges.Select (textChange => CreateTextDocumentChangeEvent (textChange, editor));
+		}
+
+		public static TextDocumentChangeEvent CreateTextDocumentChangeEvent (this TextChange textChange, TextEditor editor)
+		{
+			int startOffset = textChange.Offset;
+			int endOffset = textChange.Offset + textChange.RemovalLength;
 
 			var startLocation = editor.OffsetToLocation (startOffset);
 			var endLocation = editor.OffsetToLocation (endOffset);
@@ -46,7 +53,7 @@ namespace MonoDevelop.PowerShell
 					End = endLocation.CreatePosition ()
 				},
 				RangeLength = endOffset - startOffset,
-				Text = e.InsertedText.Text
+				Text = textChange.InsertedText.Text
 			};
 		}
 
