@@ -42,10 +42,6 @@
 			extensions="*.ps1;*.psm1;*.psd1" />
 	</Extension>
 
-	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
-		<Templates resource="PowerShellSyntaxMode.xml" />
-	</Extension>
-
 	<Extension path="/MonoDevelop/Ide/TextEditorExtensions">
 		<Class
 			id="PowerShellTextEditorExtension"

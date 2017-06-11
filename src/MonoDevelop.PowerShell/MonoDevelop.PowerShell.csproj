@@ -89,9 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MonoDevelop.PowerShell.addin.xml" />
-    <EmbeddedResource Include="MonoDevelop.PowerShell\SyntaxHighlighting\PowerShellSyntaxMode.xml">
-      <LogicalName>PowerShellSyntaxMode.xml</LogicalName>
-    </EmbeddedResource>
     <EmbeddedResource Include="Templates\EmptyPowerShellFile.xft.xml">
       <LogicalName>EmptyPowerShellFile.xft.xml</LogicalName>
     </EmbeddedResource>
