@@ -1,3 +1,6 @@
 [submodule "external/PowerShellEditorServices"]
 	path = external/PowerShellEditorServices
 	url = git://github.com/mrward/PowerShellEditorServices.git
+[submodule "external/monodevelop-binary"]
+	path = external/monodevelop-binary
+	url = git://github.com/mrward/monodevelop-binary.git
