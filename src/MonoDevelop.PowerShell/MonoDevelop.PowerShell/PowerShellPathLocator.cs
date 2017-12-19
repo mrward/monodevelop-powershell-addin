@@ -55,9 +55,15 @@ namespace MonoDevelop.PowerShell
 			if (Platform.IsWindows) {
 				PowerShellExePath = GetWindowsPowerShellExePath ();
 			} else if (Platform.IsMac) {
-				PowerShellExePath = "/usr/local/bin/powershell";
+				PowerShellExePath = "/usr/local/bin/pwsh";
+				if (!File.Exists (PowerShellExePath)) {
+					PowerShellExePath = "/usr/local/bin/powershell";
+				}
 			} else {
-				PowerShellExePath = "/usr/bin/powershell";
+				PowerShellExePath = "/usr/bin/pwsh";
+				if (!File.Exists (PowerShellExePath)) {
+					PowerShellExePath = "/usr/bin/powershell";
+				}
 			}
 
 			PowerShellPathExists = File.Exists (PowerShellExePath);
