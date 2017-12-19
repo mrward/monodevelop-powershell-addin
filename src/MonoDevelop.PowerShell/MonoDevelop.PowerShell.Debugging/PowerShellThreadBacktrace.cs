@@ -115,7 +115,7 @@ namespace MonoDevelop.PowerShell
 			var value = ObjectValue.CreateEvaluating (updater, path, ObjectValueFlags.EvaluatingGroup);
 			value.Name = GettextCatalog.GetString ("Scopes");
 
-			updater.UpdateVariableScopes (path, frame.Address);
+			updater.UpdateVariableScopes (path, frame.Address).Ignore ();
 
 			return value;
 		}

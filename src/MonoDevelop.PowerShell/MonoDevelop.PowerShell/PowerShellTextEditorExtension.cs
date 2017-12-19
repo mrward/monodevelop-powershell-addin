@@ -182,7 +182,7 @@ namespace MonoDevelop.PowerShell
 		void FindReferences ()
 		{
 			var finder = new PowerShellReferencesFinder (Editor, session);
-			finder.FindReferences (fileName, Editor.CaretLocation);
+			finder.FindReferences (fileName, Editor.CaretLocation).Ignore ();
 		}
 
 		[CommandUpdateHandler (EditCommands.Rename)]
@@ -195,7 +195,7 @@ namespace MonoDevelop.PowerShell
 		void Rename ()
 		{
 			var renamer = new PowerShellReferencesFinder (Editor, session);
-			renamer.RenameOccurrences (fileName, Editor.CaretLocation);
+			renamer.RenameOccurrences (fileName, Editor.CaretLocation).Ignore ();
 		}
 
 		public override Task<ParameterHintingResult> HandleParameterCompletionAsync (

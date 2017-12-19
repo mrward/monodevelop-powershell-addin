@@ -92,7 +92,7 @@ namespace MonoDevelop.PowerShell
 			var value = ObjectValue.CreateEvaluating (updater, path, ObjectValueFlags.EvaluatingGroup);
 			value.Name = GettextCatalog.GetString ("Variables");
 
-			updater.UpdateVariables (path, variablesReference);
+			updater.UpdateVariables (path, variablesReference).Ignore ();
 
 			return value;
 		}
