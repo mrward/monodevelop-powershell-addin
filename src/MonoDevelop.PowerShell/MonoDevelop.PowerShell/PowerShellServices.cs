@@ -44,6 +44,8 @@ namespace MonoDevelop.PowerShell
 				workspace = new PowerShellWorkspace ();
 				workspace.Initialize ();
 
+				PowerShellLoggingService.Initialize ();
+
 				active = true;
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("PowerShellServices activation error.", ex);

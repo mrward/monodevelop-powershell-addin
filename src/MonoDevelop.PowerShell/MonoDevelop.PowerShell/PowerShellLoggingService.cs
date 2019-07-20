@@ -25,10 +25,20 @@
 // THE SOFTWARE.
 
 using System;
+using MonoDevelop.Core;
+
 namespace MonoDevelop.PowerShell
 {
 	class PowerShellLoggingService
 	{
+		internal static void Initialize ()
+		{
+			// Ensure pad is created on UI thread.
+			Runtime.RunInMainThread (() => {
+				var instance = PowerShellOutputPad.Instance;
+			});
+		}
+
 		public static void Log (string message)
 		{
 			PowerShellOutputPad.WriteText (message);
