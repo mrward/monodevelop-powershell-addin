@@ -39,6 +39,7 @@ using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
+using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Refactoring;
 
@@ -53,7 +54,8 @@ namespace MonoDevelop.PowerShell
 		protected override void Initialize ()
 		{
 			PowerShellServices.Activate ();
-			fileName = DocumentContext.Name;
+			var context = (RoslynDocumentContext)DocumentContext;
+			fileName = context.FileName;
 			session = PowerShellServices.Workspace.GetSession ();
 			session.OnDiagnostics += OnDiagnostics;
 
@@ -65,7 +67,11 @@ namespace MonoDevelop.PowerShell
 
 		public override bool IsValidInContext (DocumentContext context)
 		{
-			return PowerShellWorkspace.IsSupported (context.Name);
+			if (context is RoslynDocumentContext roslynDocumentContext) {
+				return PowerShellWorkspace.IsSupported (roslynDocumentContext.FileName);
+			}
+
+			return false;
 		}
 
 		public override void Dispose ()

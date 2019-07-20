@@ -29,9 +29,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerShell.EditorServices.Protocol.LanguageServer;
 using MonoDevelop.Components;
+using MonoDevelop.Core;
 using MonoDevelop.Core.Text;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Editor;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.PowerShell
 {
@@ -44,15 +47,31 @@ namespace MonoDevelop.PowerShell
 			CancellationToken token = default (CancellationToken))
 		{
 			try {
+				FilePath fileName = GetActivePowerShellDocumentFileName ();
+				if (fileName.IsNull)
+					return null;
+
 				PowerShellSession session = PowerShellServices.Workspace.GetSession ();
 
 				DocumentLocation location = editor.OffsetToLocation (offset);
-				Hover result = await session.Hover (ctx.Name, location);
+				Hover result = await session.Hover (fileName, location);
 				return CreateTooltipItem (editor, result);
 
 			} catch (Exception ex) {
 				PowerShellLoggingService.LogError ("TooltipProvider error.", ex);
 			}
+
+			return null;
+		}
+
+		static FilePath GetActivePowerShellDocumentFileName ()
+		{
+			Document doc = IdeApp.Workbench.ActiveDocument;
+			if (doc == null)
+				return null;
+
+			if (PowerShellWorkspace.IsSupported (doc.FileName))
+				return doc.FileName;
 
 			return null;
 		}
@@ -116,8 +135,8 @@ namespace MonoDevelop.PowerShell
 			int offset,
 			Xwt.ModifierKeys modifierState)
 		{
-			var doc = ctx;
-			if (doc == null)
+			FilePath fileName = GetActivePowerShellDocumentFileName ();
+			if (fileName.IsNull)
 				return null;
 
 			var result = new TooltipInformationWindow ();
